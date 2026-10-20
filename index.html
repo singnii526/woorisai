@@ -23,7 +23,7 @@
   --pri:#FF8DB3;--pri-deep:#F06A98;--pri-ink:#D94F80;--pri-soft:#FFE6EF;--pri-pale:#FFF0F5;
   --shadow:0 6px 20px rgba(255,141,179,.13);
   /* 일정 분류 — 파스텔 */
-  --anniv:#FF9EBF;--birthday:#FFC978;--meal:#8EDBB3;--travel:#9CCBFF;--date:#C9AEFF;--etc:#C3CCDA;
+  --anniv:#FF9EBF;--birthday:#FFC978;--meal:#8EDBB3;--travel:#9CCBFF;--date:#C9AEFF;--personal:#FFAB91;--leave:#C6E07A;--etc:#C3CCDA;
   --tab:68px;--safe-b:env(safe-area-inset-bottom,0px);
   --round:"NanumSquareRound","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   --cute:"Jua","NanumSquareRound",sans-serif;
@@ -147,6 +147,46 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 .cell.has-cover .dnum{color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.45)}
 .cell.today{box-shadow:inset 0 0 0 2.5px var(--pri),0 2px 8px rgba(255,141,179,.2)}
 .cell.today .dnum{background:var(--pri-deep);color:#fff!important;padding:3px 6px;text-shadow:none}
+/* 일정 있는 날: 날짜 숫자를 일정 색 하트 테두리로 */
+.dnum.hd{padding:0!important;width:27px;height:25px;display:grid;place-items:center;border-radius:0;margin:-3px 0 0 -3px;background:none!important}
+.dnum.hd svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.dnum.hd path{fill:rgba(255,255,255,.88);stroke:var(--hc);stroke-width:2.3;stroke-linejoin:round}
+.dnum.hd em{position:relative;font-style:normal;font-size:10.5px;margin-top:-1px}
+.cell.has-cover .dnum.hd{color:var(--ink)!important;text-shadow:none}
+.cell.has-cover.sun .dnum.hd{color:#F07A95!important}.cell.has-cover.sat .dnum.hd{color:#7FA8E8!important}
+.cell.today .dnum.hd path{fill:var(--pri-deep)}
+.cell.today .dnum.hd{color:#fff!important}
+/* 월간 | 주간 */
+.vseg{display:flex;background:#fff;border-radius:19px;padding:3px;box-shadow:var(--shadow)}
+.vseg button{height:32px;padding:0 12px;border-radius:16px;font-size:13px;font-weight:800;color:var(--sub)}
+.vseg button.on{background:var(--pri-soft);color:var(--pri-ink)}
+.wk-range{padding:0 16px 8px;font-size:13px;font-weight:800;color:var(--sub)}
+.wlist{display:flex;flex-direction:column;gap:6px;padding:0 10px;touch-action:pan-y}
+.wrow{display:flex;gap:10px;align-items:stretch;background:#fff;border-radius:18px;padding:10px 10px 10px 8px;cursor:pointer;min-height:76px;box-shadow:0 2px 8px rgba(255,141,179,.08)}
+.wrow.today{box-shadow:inset 0 0 0 2.5px var(--pri),0 2px 8px rgba(255,141,179,.2)}
+.wrow .wl{width:38px;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px}
+.wrow .wl .wdn{font-size:11px;font-weight:800;color:var(--sub)}
+.wrow .wl .wdn.sun{color:#F07A95}.wrow .wl .wdn.sat{color:#7FA8E8}
+.wrow .wl .dnum{font-size:15px;align-self:center}
+.wrow .wl .dnum.hd{width:34px;height:31px;margin:0}
+.wrow .wl .dnum.hd em{font-size:13px}
+.wrow.today .wl .dnum:not(.hd){background:var(--pri-deep);color:#fff;padding:3px 7px}
+.wrow.today .wl .dnum.hd path{fill:var(--pri-deep)}.wrow.today .wl .dnum.hd{color:#fff}
+.wrow .wm{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.wev{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;padding:3px 9px;border-radius:10px;background:color-mix(in srgb,var(--c) 26%,#fff)}
+.wev i{width:8px;height:8px;border-radius:50%;background:var(--c);flex:none}
+.wev b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800}
+.wev small{font-size:11px;color:var(--sub);font-weight:700;flex:none}
+.wind{font-size:12px;color:var(--sub);font-weight:700}
+.wph{position:relative;width:56px;flex:none;border-radius:12px;overflow:hidden}
+.wph .cover-bg{position:absolute;inset:-8px;background:center/cover no-repeat;filter:blur(7px);opacity:.75}
+.wph .cover{position:absolute;inset:0;background:center/contain no-repeat}
+/* 날짜 시트: 일정을 눌러야 체크리스트가 펼쳐짐 */
+.erow .ckc{font-size:11.5px;font-weight:800;color:color-mix(in srgb,var(--c) 35%,#6A4A58);white-space:nowrap}
+.erow .arr{font-size:12px;color:var(--sub);transition:transform .2s}
+.ev-wrap.open .erow .arr{transform:rotate(180deg)}
+.ev-act{display:flex;justify-content:flex-end;padding:0 10px 10px}
+.ev-act button{height:34px;padding:0 14px;border-radius:17px;background:#fff;font-size:13px;font-weight:800;color:var(--pri-ink)}
 .cell .ind{position:absolute;right:3px;top:4px;font-size:9px;z-index:2;display:flex;gap:1px;line-height:1}
 .cell .ind i{font-style:normal;opacity:.8}
 .cell.has-cover .ind i{opacity:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
@@ -243,6 +283,7 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 .cku:first-of-type{border-top:0}
 .cku-h{display:flex;align-items:center;gap:8px;margin:8px 0 6px;cursor:pointer}
 .cku-h b{flex:1;font-size:14px}
+.cku .hint{font-size:11.5px;color:var(--sub);font-weight:700;margin-top:3px}
 .cku-h .em{width:30px;height:30px;border-radius:11px;display:grid;place-items:center;font-size:15px;background:color-mix(in srgb,var(--c) 28%,#fff)}
 
 /* ── 앨범 / 버킷 ── */
@@ -317,7 +358,34 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 #splash .br b{display:block;font-family:var(--cute);font-weight:400;font-size:32px;letter-spacing:1px}
 #splash .br span{font-size:13px;font-weight:800;opacity:.95}
 @keyframes spUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.set .sp{width:44px;height:60px;border-radius:10px;object-fit:cover;flex:none;background:linear-gradient(160deg,#FFD6E5,#FFB3CC);display:grid;place-items:center;font-size:18px}
+.spl{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px}
+.spt{position:relative;width:58px;height:104px;border-radius:12px;background:#FFF0F5 center/cover no-repeat;border:2px solid #FFE1EC;cursor:pointer;padding:0}
+.spt .x{position:absolute;right:-7px;top:-7px;width:24px;height:24px;border-radius:50%;background:#fff;border:1.5px solid #F3C6D6;color:var(--pri-ink);font-size:15px;line-height:1;display:grid;place-items:center;box-shadow:0 2px 6px rgba(200,90,130,.2)}
+.spt.add{display:grid;place-items:center;border:2px dashed #FFC8DA;background:#fff;color:var(--pri-ink);font-size:24px;font-weight:800}
+.spt.add small{display:block;font-size:11px;font-weight:800;margin-top:-6px}
+/* 시작 화면 사진 맞추기 편집기 */
+#spEditor{position:fixed;inset:0;z-index:250;background:#1E1418;display:none;flex-direction:column;align-items:center;color:#fff;touch-action:none;user-select:none}
+#spEditor.open{display:flex}
+.spe-top{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 8px}
+.spe-top b{font-family:var(--cute);font-weight:400;font-size:20px}
+.spe-top small{opacity:.7;font-weight:700;font-size:13px}
+.spe-top button{color:#fff;font-weight:800;font-size:15px;padding:8px 6px}
+.spe-top .save{color:#FFB3CC}
+.spe-frame{position:relative;border-radius:22px;overflow:hidden;box-shadow:0 0 0 2px rgba(255,255,255,.35),0 10px 30px rgba(0,0,0,.5);cursor:grab;background:#000}
+.spe-frame:active{cursor:grabbing}
+.spe-frame canvas{display:block;width:100%;height:100%}
+.spe-guide{position:absolute;inset:0;pointer-events:none}
+.spe-guide svg{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:78%;opacity:.55}
+.spe-guide i{position:absolute;left:0;right:0;bottom:0;height:16%;border-top:1.5px dashed rgba(255,255,255,.45);font-style:normal;font-size:11px;text-align:center;padding-top:6px;opacity:.75}
+.spe-tools{width:100%;max-width:480px;padding:12px 18px calc(14px + env(safe-area-inset-bottom,0px))}
+.spe-zoom{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800}
+.spe-zoom input{flex:1;accent-color:#FF8DB3}
+.spe-btns{display:flex;gap:8px;margin-top:10px}
+.spe-btns button{flex:1;height:44px;border-radius:22px;background:rgba(255,255,255,.12);color:#fff;font-weight:800;font-size:14px}
+.spe-btns button.on{background:#FF8DB3;color:#3A1626}
+.spe-hint{font-size:12px;opacity:.7;text-align:center;margin-top:8px}
+.spe-guide.cellg b{position:absolute;left:10px;top:8px;font-size:22px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.5);opacity:.85}
+.spe-guide.cellg span{position:absolute;left:8px;right:8px;bottom:10px;height:13%;border:1.5px dashed rgba(255,255,255,.5);border-radius:8px}
 .flash{animation:flash 1.6s ease}
 @keyframes flash{0%,100%{box-shadow:0 0 0 0 rgba(240,106,152,0)}25%,60%{box-shadow:0 0 0 4px rgba(240,106,152,.45);background-color:#FFF0F5}}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--pri-deep);margin-top:7px;flex:none}
@@ -333,7 +401,18 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 <div id="toasts"></div>
 <input type="file" id="fileInput" accept="image/*" multiple hidden>
 <input type="file" id="avatarInput" accept="image/*" hidden>
-<input type="file" id="splashInput" accept="image/*" hidden>
+<input type="file" id="splashInput" accept="image/*" multiple hidden>
+<div id="spEditor">
+  <div class="spe-top"><button data-act="cancel">취소</button><div style="text-align:center"><b id="speTitle">사진 위치 맞추기</b><br><small id="speStep"></small></div><button class="save" data-act="save">저장</button></div>
+  <div class="spe-frame" id="speFrame"><canvas id="speCanvas"></canvas>
+    <div class="spe-guide" id="speGuideSplash"><svg viewBox="0 0 100 92"><path d="M50 88C20 66 3 48 3 27 3 12 14 3 27 3c10 0 18 6 23 14 5-8 13-14 23-14 13 0 24 9 24 24 0 21-17 39-47 61z" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="4 4"/></svg><i>이름·D+ 글씨 자리</i></div>
+    <div class="spe-guide cellg" id="speGuideCell" hidden><b>21</b><span></span></div></div>
+  <div class="spe-tools">
+    <div class="spe-zoom"><span>−</span><input type="range" id="speZoom" min="0" max="1000" value="0"><span>+</span></div>
+    <div class="spe-btns"><button data-act="fit">🖼️ 창 맞춤</button><button data-act="fill">⬛ 꽉 채우기</button></div>
+    <div class="spe-hint">두 손가락으로 확대·축소, 끌어서 위치 이동 (PC는 마우스 휠·끌기)</div>
+  </div>
+</div>
 
 <script>
 /* ===================== 설정 ===================== */
@@ -358,6 +437,8 @@ const CATS = {
   meal:    {name:'식사',   emoji:'🍽️'},
   travel:  {name:'여행',   emoji:'✈️'},
   date:    {name:'데이트', emoji:'💑'},
+  personal:{name:'개인일정', emoji:'🙋'},
+  leave:   {name:'연차',   emoji:'🌴'},
   etc:     {name:'기타',   emoji:'📌'},
 };
 const QUESTIONS = [
@@ -510,7 +591,7 @@ const myId = () => S.user?.id;
 const eventItem = e => ({kind:'event', id:e.id, data:{...e, author:undefined}});
 const bucketItem = b => ({kind:'bucket', id:b.id, data:{...b, author:undefined}});
 const diaryItem = ds => S.diary[ds]?.me ? {kind:'diary', id:`${ds}:${myId()}`, data:{date:ds, ...S.diary[ds].me}} : {kind:'diary', id:`${ds}:${myId()}`, deleted:true};
-const coverItem = ds => S.covers[ds] ? {kind:'cover', id:ds, data:{photoId:S.covers[ds]}} : {kind:'cover', id:ds, deleted:true};
+const coverItem = ds => S.covers[ds] ? {kind:'cover', id:ds, data:{photoId:S.covers[ds], crop:(S.coverCrops || {})[ds] || null}} : {kind:'cover', id:ds, deleted:true};
 function applyItem(it){
   const who = it.author === myId() ? 'me' : 'partner', d = it.data;
   switch (it.kind){
@@ -529,7 +610,9 @@ function applyItem(it){
       else S.photos.push({id:it.id, date:d.date, author:who, createdAt:d.createdAt});
       break;
     case 'cover':
-      if (it.deleted) delete S.covers[it.id]; else S.covers[it.id] = d.photoId;
+      S.coverCrops ||= {};
+      if (it.deleted){ delete S.covers[it.id]; delete S.coverCrops[it.id]; }
+      else { S.covers[it.id] = d.photoId; if (d.crop) S.coverCrops[it.id] = d.crop; else delete S.coverCrops[it.id]; }
       break;
     case 'diary': case 'answer': {
       const ds = it.id.slice(0,10), box = it.kind === 'diary' ? S.diary : S.answers;
@@ -581,7 +664,7 @@ function applyCouple(c){
   S.couple = {id:c.id, code:c.code, start:c.start, myBirthday:S.me?.birthday || '',
     partner:{id:c.partner.id, name:S.me?.partnerAlias || c.partner.name, realName:c.partner.name, birthday:c.partner.birthday}};
   syncAvatar('partner', c.partner.id, c.partner.avatarVer);
-  syncSplash(c.splashVer);
+  syncSplashes(c.splashes);
 }
 // 프로필 사진: 서버 버전이 바뀌었을 때만 받아온다
 const avatarBusy = {};
@@ -596,7 +679,8 @@ async function syncAvatar(slot, userId, ver){
   } catch(e){} finally { delete avatarBusy[slot]; }
 }
 function clearShared(){
-  S.splashVer = 0; store.del('__splash'); splashUrl = null;
+  for (const x of S.splashes || []) store.del('__splash:' + x.id);
+  S.splashes = []; splashUrls = {}; splashCur = null;
   delete S.avatars.partner;
   Object.assign(S, {couple:null, pending:null, events:[], photos:[], covers:{}, bucket:[], notifs:[], answers:{}, diary:{}, since:0, outbox:[]});
   for (const k in thumbs) delete thumbs[k];
@@ -904,7 +988,22 @@ function homeView(){
   </section>`;
 }
 
+const HEART_D = 'M12 21s-7.5-4.6-9.7-9.2C.8 8.6 2.7 4.5 6.6 4.5c2.2 0 3.6 1.3 4.4 2.6.8-1.3 2.2-2.6 4.4-2.6 3.9 0 5.8 4.1 4.3 7.3C19.5 16.4 12 21 12 21z';
+// 일정이 있으면 날짜 숫자를 그 일정 색 하트 테두리로 감싼다
+const dayNum = (n, cat) => cat
+  ? `<span class="dnum hd" style="--hc:var(--${cat})"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${HEART_D}" transform="translate(0 -1.2)"/></svg><em>${n}</em></span>`
+  : `<span class="dnum">${n}</span>`;
+const weekStart = ds => ymd(addDays(pd(ds), -pd(ds).getDay()));
+// 대표사진 범위 → CSS 배경 크기·위치. exact=false 면 가로만 맞추고 세로는 비율 유지(주간 썸네일처럼 모양이 다른 곳)
+function coverCss(ds, th, exact = true){
+  const c = (S.coverCrops || {})[ds];
+  if (!c) return `background-image:url(${th});background-size:contain`;
+  const pos = (o, w) => Math.abs(1 - w) < 1e-4 ? 50 : Math.round(o / (1 - w) * 10000) / 100;
+  return `background-image:url(${th});background-size:${100 / c.w}% ${exact ? 100 / c.h + '%' : 'auto'};background-position:${pos(c.x, c.w)}% ${pos(c.y, c.h)}%`;
+}
+
 function calView(){
+  if ((S.calMode || 'month') === 'week') return weekView();
   if (!ui.ym){ const t = new Date(); ui.ym = [t.getFullYear(), t.getMonth()]; }
   const [y,m] = ui.ym;
   const first = new Date(y,m,1), start = addDays(first, -first.getDay());
@@ -927,8 +1026,8 @@ function calView(){
       return `<i class="chip ${!s&&dow!==0?'cl':''} ${!f&&dow!==6?'cr':''}" style="--c:var(--${e.cat})">${label}</i>`;
     }).join('') + (evs.length>max ? `<span class="more">+${evs.length-max}</span>` : '');
     cells += `<div class="cell ${th?'has-cover':''} ${ds===t?'today':''} ${dow===0?'sun':dow===6?'sat':''}" data-action="openDay" data-date="${ds}">
-      ${th ? `<div class="cover-bg" style="background-image:url(${th})"></div><div class="cover" style="background-image:url(${th})"></div>` : ''}
-      <span class="dnum">${d.getDate()}</span>${ind ? `<span class="ind">${ind}</span>` : ''}
+      ${th ? `<div class="cover-bg" style="background-image:url(${th})"></div><div class="cover" style="${coverCss(ds, th)}"></div>` : ''}
+      ${dayNum(d.getDate(), evs[0]?.cat)}${ind ? `<span class="ind">${ind}</span>` : ''}
       <div class="chips">${chips}</div></div>`;
   }
   // 이번 달 일정 목록
@@ -938,7 +1037,7 @@ function calView(){
   list.sort((a,b) => a.date.localeCompare(b.date));
   const shown = list.filter(e => S.filters[e.cat] !== false);
   return `
-  <div class="cal-head"><b><small>${y}</small> ${m+1}월</b>
+  <div class="cal-head"><b><small>${y}</small> ${m+1}월</b>${viewSeg()}
     <button class="today-btn" data-action="calToday">오늘</button>
     <button class="nav" data-action="calMove" data-d="-1">‹</button><button class="nav" data-action="calMove" data-d="1">›</button></div>
   <div class="legend">${Object.entries(CATS).map(([k,c]) => `<button class="lg ${S.filters[k]===false?'off':''}" style="--c:var(--${k})" data-action="toggleFilter" data-cat="${k}"><i></i>${c.name}</button>`).join('')}</div>
@@ -950,6 +1049,37 @@ function calView(){
       <span class="bar"></span><span class="d">${md(e.date)}${e.end && e.end!==e.date ? `<br>~${md(e.end)}` : ''}</span>
       <span class="t">${esc(e.title)}</span>${e.checklist?.length ? `<span class="ckp">☑️ ${e.checklist.filter(i => i.done).length}/${e.checklist.length}</span>` : ''}<span class="tag">${CATS[e.cat].name}</span></div>`).join('') : '<div class="empty">이번 달 일정이 없어요</div>'}
   </section>`;
+}
+
+const viewSeg = () => `<div class="vseg"><button class="${(S.calMode||'month')==='month'?'on':''}" data-action="calMode" data-m="month">월간</button><button class="${S.calMode==='week'?'on':''}" data-action="calMode" data-m="week">주간</button></div>`;
+function weekView(){
+  if (!ui.wk) ui.wk = weekStart(todayStr());
+  const st = pd(ui.wk), en = addDays(st, 6), t = todayStr();
+  let rows = '';
+  for (let i = 0; i < 7; i++){
+    const d = addDays(st, i), ds = ymd(d), dow = d.getDay();
+    const evs = visibleOn(ds), cov = S.covers[ds], th = cov && thumbs[cov];
+    const nPh = S.photos.filter(p => p.date === ds).length, dy = S.diary[ds] || {};
+    const ind = [nPh ? `📷 ${nPh}` : '', dy.me || dy.partner ? (dy.me && dy.partner ? '💌 둘 다 일기' : '📝 일기') : ''].filter(Boolean).join(' · ');
+    rows += `<div class="wrow ${ds===t?'today':''}" data-action="openDay" data-date="${ds}">
+      <div class="wl"><span class="wdn ${dow===0?'sun':dow===6?'sat':''}">${WD[dow]}</span>${dayNum(d.getDate(), evs[0]?.cat)}</div>
+      <div class="wm">${evs.length ? evs.map(e => {
+          const multi = e.end && e.end !== e.date, items = e.auto ? [] : ckOn(e, ds);
+          return `<div class="wev" style="--c:var(--${e.cat})"><i></i><b>${esc(e.title)}</b>${multi ? `<small>${md(e.date)}~${md(e.end)}</small>` : ''}${items.length ? `<small>☑️ ${items.filter(x => x.done).length}/${items.length}</small>` : ''}</div>`;
+        }).join('') : '<span class="muted" style="font-size:12.5px">일정 없음</span>'}
+        ${ind ? `<div class="wind">${ind}</div>` : ''}</div>
+      ${th ? `<div class="wph"><div class="cover-bg" style="background-image:url(${th})"></div><div class="cover" style="${coverCss(ds, th, false)}"></div></div>` : ''}
+    </div>`;
+  }
+  const sameM = st.getMonth() === en.getMonth();
+  return `
+  <div class="cal-head"><b><small>${st.getFullYear()}</small> ${st.getMonth()+1}월</b>${viewSeg()}
+    <button class="today-btn" data-action="calToday">오늘</button>
+    <button class="nav" data-action="calMove" data-d="-1">‹</button><button class="nav" data-action="calMove" data-d="1">›</button></div>
+  <div class="wk-range">${st.getMonth()+1}월 ${st.getDate()}일 ~ ${sameM ? '' : (en.getMonth()+1) + '월 '}${en.getDate()}일</div>
+  <div class="legend">${Object.entries(CATS).map(([k,c]) => `<button class="lg ${S.filters[k]===false?'off':''}" style="--c:var(--${k})" data-action="toggleFilter" data-cat="${k}"><i></i>${c.name}</button>`).join('')}</div>
+  <div class="wlist" id="calGrid">${rows}</div>
+  <p class="muted" style="text-align:center;margin:10px 0 0;font-size:12px">날짜를 누르면 사진·일기·체크리스트를 볼 수 있어요 · 옆으로 밀면 지난주/다음주</p>`;
 }
 
 function albumView(){
@@ -1012,12 +1142,11 @@ function settingsView(){
   </section>
   <section class="card"><h3>🔐 우리 공간</h3>
     <div class="set"><div class="t"><b>공간 코드</b><span>둘만 아는 코드 · 다른 사람은 입장 불가</span></div><b style="letter-spacing:3px;color:var(--pri)">${c.code}</b></div>
-    <div class="set">${splashUrl ? `<img class="sp" src="${splashUrl}" alt="">` : '<span class="sp">💗</span>'}
-      <div class="t"><b>앱 시작 화면 사진</b><span>앱을 열 때 하트와 함께 나와요${SERVER ? ' · 둘 다 같은 사진' : ''}</span></div>
-      <button class="btn ghost sm" style="width:auto;padding:0 12px" data-action="pickSplash">${splashUrl ? '변경' : '등록'}</button></div>
-    <div class="btns" style="margin:0 0 6px">
-      <button class="btn line sm" data-action="previewSplash">▶ 시작 화면 미리보기</button>
-      ${splashUrl ? '<button class="btn line sm" style="width:auto;padding:0 14px" data-action="removeSplash">사진 지우기</button>' : ''}</div>
+    <div class="set" style="border-bottom:0;padding-bottom:0"><div class="t"><b>앱 시작 화면 사진</b><span>최대 ${SPLASH_LIMIT}장 · 앱을 켤 때마다 랜덤으로 나와요${SERVER ? ' · 둘 다 같은 사진' : ''}</span></div></div>
+    <div class="spl">${(S.splashes || []).map(x => `<button class="spt" style="background-image:url(${splashUrls[x.id] || ''})" data-action="previewSplash" data-id="${x.id}" aria-label="미리보기">
+        <span class="x" data-action="removeSplash" data-id="${x.id}" aria-label="지우기">×</span></button>`).join('')}
+      ${(S.splashes || []).length < SPLASH_LIMIT ? `<button class="spt add" data-action="pickSplash">+<small>${(S.splashes || []).length}/${SPLASH_LIMIT}</small></button>` : ''}</div>
+    <button class="btn line sm" style="margin-bottom:6px" data-action="previewSplash">▶ 시작 화면 미리보기${(S.splashes || []).length > 1 ? ' (랜덤)' : ''}</button>
     <div class="set"><div class="t"><b>로그인 계정</b><span>${S.user.provider==='kakao' ? '카카오' : '카카오 (데모)'}</span></div></div>
     ${installPrompt ? '<button class="btn ghost sm" style="margin-top:8px" data-action="installApp">📲 홈 화면에 앱 설치</button>'
       : isIOS && !isStandalone() ? '<p class="muted" style="font-size:12px;margin:8px 0 0">📲 Safari 아래 공유 버튼 → "홈 화면에 추가"로 앱처럼 쓸 수 있어요</p>' : ''}
@@ -1049,23 +1178,28 @@ function refreshSheet(){
   $('#sheet').scrollTop = sc;
 }
 
-function openDay(ds){
+function openDay(ds, openEv){
+  if (openEv !== undefined) ui.openEv = openEv;
+  else if (ui.sheet?.date !== ds) ui.openEv = null; // 다른 날짜를 열면 모두 접힌 상태로
   const photos = S.photos.filter(p => p.date === ds).sort((a,b) => a.createdAt-b.createdAt);
   const evs = eventsOn(ds), cov = S.covers[ds];
   openSheet(`
     <div class="sh-title"><h2>${mdw(ds)}</h2><button class="btn ghost sm" style="width:auto;padding:0 14px" data-action="newEvent" data-date="${ds}">+ 일정</button></div>
     <div class="sec-t" id="sec-event">일정</div>
-    ${evs.length ? evs.map(e => `<div class="ev-wrap" style="--c:var(--${e.cat})"><div class="erow" ${e.auto ? '' : `data-action="editEvent" data-id="${e.id}"`}>
+    ${evs.length ? evs.map(e => { const open = !e.auto && ui.openEv === e.id, items = e.auto ? [] : ckOn(e, ds);
+      return `<div class="ev-wrap ${open ? 'open' : ''}" style="--c:var(--${e.cat})"><div class="erow" ${e.auto ? '' : `data-action="toggleEv" data-id="${e.id}" data-date="${ds}"`}>
       <span style="font-size:20px">${CATS[e.cat].emoji}</span>
       <div class="t"><b>${esc(e.title)}</b><span>${e.auto ? '자동 기념일' : `${e.end && e.end!==e.date ? `${md(e.date)} ~ ${md(e.end)} · ` : ''}${esc(e.author==='partner'?ptName():meName())} 작성${e.memo ? ' · '+esc(e.memo) : ''}`}</span></div>
-      <span class="tag">${CATS[e.cat].name}</span></div>${e.auto ? '' : ckBlock(e, ds)}</div>`).join('') : '<div class="empty" style="padding:6px 0">일정이 없어요</div>'}
+      ${items.length ? `<span class="ckc">☑️ ${items.filter(x => x.done).length}/${items.length}</span>` : ''}
+      <span class="tag">${CATS[e.cat].name}</span>${e.auto ? '' : '<span class="arr">▾</span>'}</div>
+      ${open ? ckBlock(e, ds) + `<div class="ev-act"><button data-action="editEvent" data-id="${e.id}">✏️ 일정 수정</button></div>` : ''}</div>`; }).join('') : '<div class="empty" style="padding:6px 0">일정이 없어요</div>'}
     <div class="sec-t" id="sec-diary">일기 · 하고 싶은 말</div>
     ${diaryBlock(ds)}
     <div class="sec-t" id="sec-photo"><span>사진 ${photos.length}장</span><span style="font-weight:500">★ 누르면 캘린더 대표사진</span></div>
     <div class="pgrid">
       ${photos.map(p => `<div class="ph ${cov===p.id?'cov':''}" style="background-image:url(${thumbs[p.id]})" data-action="viewPhoto" data-id="${p.id}">
         <button class="star" data-action="setCover" data-id="${p.id}" aria-label="대표사진">${cov===p.id?'★':'☆'}</button>
-        ${cov===p.id ? '<span class="cov-tag">대표</span>' : ''}</div>`).join('')}
+        ${cov===p.id ? `<button class="cov-tag" data-action="editCoverCrop" data-id="${p.id}">대표 · 📐 맞추기</button>` : ''}</div>`).join('')}
       <button class="ph add" data-action="uploadFor" data-date="${ds}"><div><span>+</span>사진 추가</div></button>
     </div>`, {type:'day', date:ds});
 }
@@ -1095,12 +1229,13 @@ function checklistCard(){
     <div class="empty">일정에 🎒 챙길 것, 📍 꼭 갈 곳을 적어두면<br>여기서 미리 챙겨줘요</div></section>`;
   return `<section class="card"><h3>잊지 말자 체크리스트 <small>2주 안 일정</small></h3>
     ${evs.map(e => { const all = e.checklist, done = all.filter(i => i.done).length, n = diffDays(pd(t), pd(e.date));
-      const left = all.filter(i => !i.done).sort((a,b) => (a.day||e.date).localeCompare(b.day||e.date));
-      return `<div class="cku" style="--c:var(--${e.cat})">
-        <div class="cku-h" data-action="gotoDay" data-date="${e.date < t ? t : e.date}"><span class="em">${CATS[e.cat].emoji}</span><b>${esc(e.title)}</b><span class="dd">${n <= 0 ? '진행 중' : ddLabel(n)}</span></div>
+      // 항목이 남아 있는 가장 빠른 날로 이동해서 그 일정을 펼친다
+      const left = all.filter(i => !i.done).map(i => i.day || e.date).sort();
+      const go = left.find(d => d >= t) || (e.date < t ? t : e.date);
+      return `<div class="cku" style="--c:var(--${e.cat})" data-action="gotoDay" data-date="${go}" data-ev="${e.id}">
+        <div class="cku-h"><span class="em">${CATS[e.cat].emoji}</span><b>${esc(e.title)}</b><span class="dd">${n <= 0 ? '진행 중' : ddLabel(n)}</span></div>
         <div class="prog sm"><i style="width:${done/all.length*100}%"></i></div>
-        <div class="muted" style="font-size:11px;margin-bottom:2px">${done} / ${all.length} 완료</div>
-        ${ckRows(e, left.slice(0,4))}${left.length > 4 ? `<div class="muted" style="font-size:12px;padding:4px 0">외 ${left.length-4}개 더</div>` : ''}</div>`; }).join('')}
+        <div class="hint">${done} / ${all.length} 완료 · 아직 ${all.length - done}개 남았어요 — 눌러서 캘린더에서 확인 ›</div></div>`; }).join('')}
   </section>`;
 }
 // 일정 폼 안의 체크리스트 편집기 (ui.draft에 임시 보관)
@@ -1191,7 +1326,8 @@ async function openViewer(id){
   v.innerHTML = `<div class="vt"><button data-action="closeViewer" style="font-size:26px;color:#fff">✕</button>
       <div style="text-align:center;font-size:13px">${mdw(p.date)}<br><span style="opacity:.7">${esc(p.author==='partner'?ptName():meName())}님이 올림</span></div><span style="width:26px"></span></div>
     <div class="vimg"><img src="${rec?.full || thumbs[id]}" alt=""></div>
-    <div class="vb"><button class="btn ${isCov?'line':''}" data-action="setCover" data-id="${id}">${isCov ? '★ 대표사진 해제' : '☆ 대표사진으로 지정'}</button>
+    <div class="vb"><button class="btn ${isCov?'line':''}" data-action="setCover" data-id="${id}">${isCov ? '★ 해제' : '☆ 대표사진으로 지정'}</button>
+      ${isCov ? `<button class="btn" data-action="editCoverCrop" data-id="${id}">📐 달력에 보일 부분</button>` : ''}
       <button class="btn danger" style="width:90px" data-action="delPhoto" data-id="${id}">삭제</button></div>`;
   v.classList.add('open');
 }
@@ -1261,15 +1397,23 @@ const A = {
   /* 탭 / 캘린더 */
   tab(el){ ui.tab = el.dataset.tab; render(); window.scrollTo(0,0); },
   calMove(el){ moveMonth(+el.dataset.d); },
-  calToday(){ ui.ym = null; render(); },
+  calToday(){ ui.ym = null; ui.wk = null; render(); },
+  calMode(el){
+    S.calMode = el.dataset.m; save();
+    // 보고 있던 달/주를 이어서 보여준다
+    if (S.calMode === 'week'){ const t = todayStr(), [y,m] = ui.ym || []; ui.wk = weekStart(ui.ym && (+t.slice(0,4) !== y || +t.slice(5,7)-1 !== m) ? ymd(new Date(y, m, 1)) : t); }
+    else if (ui.wk){ const d = addDays(pd(ui.wk), 3); ui.ym = [d.getFullYear(), d.getMonth()]; }
+    render();
+  },
   toggleFilter(el){ const k = el.dataset.cat; S.filters[k] = S.filters[k] === false; save(); render(); },
   openDay(el){ openDay(el.dataset.date); },
-  gotoDay(el){ const d = pd(el.dataset.date); ui.tab = 'cal'; ui.ym = [d.getFullYear(), d.getMonth()]; render(); openDay(el.dataset.date); },
+  gotoDay(el){ const d = pd(el.dataset.date); ui.tab = 'cal'; ui.ym = [d.getFullYear(), d.getMonth()]; ui.wk = weekStart(el.dataset.date); render(); openDay(el.dataset.date, el.dataset.ev || null); },
   closeSheet,
 
   /* 일정 */
   newEvent(el){ openEventForm(null, el.dataset.date || (ui.sheet?.date)); },
   editEvent(el){ openEventForm(S.events.find(e => e.id === el.dataset.id)); },
+  toggleEv(el){ openDay(el.dataset.date, ui.openEv === el.dataset.id ? null : el.dataset.id); },
   saveEvent(el){
     const f = $('#evForm').elements;
     const title = f.evTitle.value.trim(); if (!title) return toast('제목을 입력해 주세요');
@@ -1307,13 +1451,19 @@ const A = {
     delete S.avatars[slot]; save(); render(); toast('프로필 사진을 지웠어요');
   },
 
-  /* 앱 시작 화면 사진 */
-  pickSplash(){ $('#splashInput').click(); },
-  previewSplash(){ splashShow(true); },
-  async removeSplash(){
-    if (!confirm('시작 화면 사진을 지울까요?' + (SERVER ? ' 상대방 휴대폰에서도 지워져요.' : ''))) return;
-    if (SERVER){ try { await api('DELETE', '/api/couple/splash'); } catch(e){ return toast(e.message); } }
-    S.splashVer = 0; save(); await store.del('__splash'); splashUrl = null; splashSetPhoto(); render(); toast('시작 화면 사진을 지웠어요');
+  /* 앱 시작 화면 사진 (최대 5장, 켤 때마다 랜덤) */
+  pickSplash(){
+    if ((S.splashes || []).length >= SPLASH_LIMIT) return toast(`최대 ${SPLASH_LIMIT}장까지 등록할 수 있어요`);
+    $('#splashInput').click();
+  },
+  previewSplash(el){ splashShow(true, el.dataset.id); },
+  async removeSplash(el, ev){
+    ev.stopPropagation();
+    const id = el.dataset.id;
+    if (!confirm('이 시작 화면 사진을 지울까요?' + (SERVER ? ' 상대방 휴대폰에서도 지워져요.' : ''))) return;
+    if (SERVER){ try { S.splashes = (await api('DELETE', '/api/couple/splash/' + id)).splashes; } catch(e){ return toast(e.message); } }
+    else S.splashes = S.splashes.filter(x => x.id !== id);
+    await store.del('__splash:' + id); delete splashUrls[id]; save(); render(); toast('지웠어요');
   },
 
   /* 체크리스트 */
@@ -1376,13 +1526,23 @@ const A = {
   },
   albumPick(){ ui.uploadDate = $('#upDate').value || todayStr(); closeSheet(); $('#fileInput').click(); },
   viewPhoto(el, ev){ if (ev.target.closest('.star')) return; openViewer(el.dataset.id); },
-  setCover(el, ev){
+  async setCover(el, ev){
     ev.stopPropagation();
     const p = S.photos.find(x => x.id === el.dataset.id); if (!p) return;
-    if (S.covers[p.date] === p.id){ delete S.covers[p.date]; toast('대표사진을 해제했어요'); }
-    else { S.covers[p.date] = p.id; toast(`${md(p.date)} 대표사진으로 지정했어요 ⭐`); }
+    S.coverCrops ||= {};
+    if (S.covers[p.date] === p.id){ delete S.covers[p.date]; delete S.coverCrops[p.date]; toast('대표사진을 해제했어요'); }
+    else {
+      const rect = await coverCropFor(p, null); if (!rect) return; // 취소하면 지정 안 함
+      S.covers[p.date] = p.id; S.coverCrops[p.date] = rect; toast(`${md(p.date)} 대표사진으로 지정했어요 ⭐`);
+    }
     pushItems(coverItem(p.date));
     save(); render(); refreshSheet(); if (ui.viewer) openViewer(ui.viewer);
+  },
+  async editCoverCrop(el){ // 이미 대표사진인 사진의 보일 부분 다시 맞추기
+    const p = S.photos.find(x => x.id === el.dataset.id); if (!p) return;
+    const rect = await coverCropFor(p, (S.coverCrops || {})[p.date]); if (!rect) return;
+    (S.coverCrops ||= {})[p.date] = rect; pushItems(coverItem(p.date));
+    save(); render(); refreshSheet(); if (ui.viewer) openViewer(ui.viewer); toast('달력에 보일 부분을 바꿨어요');
   },
   async delPhoto(el){
     if (!confirm('사진을 삭제할까요? 상대방 화면에서도 사라져요.')) return;
@@ -1390,7 +1550,7 @@ const A = {
     await store.del(id); delete thumbs[id];
     S.photos = S.photos.filter(x => x.id !== id);
     enqueue({type:'delphoto', id});
-    if (S.covers[p.date] === id){ delete S.covers[p.date]; pushItems(coverItem(p.date)); }
+    if (S.covers[p.date] === id){ delete S.covers[p.date]; delete (S.coverCrops || {})[p.date]; pushItems(coverItem(p.date)); }
     save(); closeViewer(); render(); refreshSheet(); toast('삭제했어요');
   },
   closeViewer,
@@ -1529,6 +1689,7 @@ async function seed(){
 }
 
 function moveMonth(d){
+  if (S.calMode === 'week'){ ui.wk = ymd(addDays(pd(ui.wk || weekStart(todayStr())), 7*d)); render(); return; }
   if (!ui.ym){ const t = new Date(); ui.ym = [t.getFullYear(), t.getMonth()]; }
   const n = new Date(ui.ym[0], ui.ym[1] + d, 1); ui.ym = [n.getFullYear(), n.getMonth()]; render();
 }
@@ -1592,21 +1753,172 @@ document.addEventListener('change', async e => {
 });
 document.addEventListener('focusout', () => { if (ui.needRender){ ui.needRender = false; setTimeout(() => { render(); refreshSheet(); }, 0); } });
 $('#splashInput').addEventListener('change', async e => {
-  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  let url;
-  try { url = resize(await loadImage(f), 1280, .82); } catch(err){ return toast('사진을 읽지 못했어요'); }
-  let ver = Date.now();
-  if (SERVER){
-    toast('사진을 올리는 중…');
-    try { const fd = new FormData(); fd.append('splash', await dataURLToBlob(url), 'splash.jpg'); ver = (await api('POST', '/api/couple/splash', fd)).splashVer; }
-    catch(err){ return toast('사진을 올리지 못했어요: ' + err.message); }
+  let files = [...e.target.files]; e.target.value = '';
+  const room = SPLASH_LIMIT - (S.splashes || []).length;
+  if (!files.length) return;
+  if (files.length > room){ toast(`최대 ${SPLASH_LIMIT}장이라 ${room}장만 올릴게요`); files = files.slice(0, room); }
+  let added = 0;
+  for (let i = 0; i < files.length; i++){
+    let img; try { img = await loadImage(files[i]); } catch(err){ toast('사진을 읽지 못했어요'); continue; }
+    const url = await splashEditor(img, files.length > 1 ? `${i+1} / ${files.length}` : '');
+    if (!url) continue; // 취소
+    let id = uid().replace(/[^a-z0-9]/g, ''), ver = Date.now();
+    if (SERVER){
+      try {
+        const fd = new FormData(); fd.append('splash', await dataURLToBlob(url), 'splash.jpg');
+        const r = await api('POST', '/api/couple/splash', fd); id = r.id; S.splashes = r.splashes; ver = r.splashes.find(x => x.id === id).ver;
+      } catch(err){ toast('사진을 올리지 못했어요: ' + err.message); continue; }
+    } else S.splashes = [...(S.splashes || []), {id, ver}];
+    await store.put({id:'__splash:' + id, url, ver}); splashUrls[id] = url; save(); added++;
   }
-  await store.put({id:'__splash', url, ver}); splashUrl = url; S.splashVer = ver; save();
-  splashSetPhoto(); render(); toast('시작 화면 사진을 바꿨어요 💗'); splashShow(true);
+  render();
+  if (added){ toast(`시작 화면 사진 ${added}장을 등록했어요 💗`); splashShow(true, (S.splashes || []).slice(-1)[0]?.id); }
 });
 
+/* ===================== 시작 화면 사진 맞추기 편집기 ===================== */
+// 휴대폰 화면 비율 틀 안에서 확대·축소·이동. 남는 여백은 같은 사진을 흐리게 깔아 채운다.
+const SPLASH_LIMIT = 5;
+function screenRatio(){ // 가로/세로 — 휴대폰이면 실제 화면 비율, PC면 일반적인 휴대폰 비율
+  const r = innerWidth <= 600 ? innerWidth / innerHeight : 9 / 19.5;
+  return Math.min(9/16, Math.max(9/22, r));
+}
+// 흐린 배경: 아주 작게 줄였다가 크게 늘리면 부드럽게 번진다 (모든 브라우저에서 동작)
+function drawBlurCover(g, img, W, H){
+  const tiny = document.createElement('canvas'), tw = 24, th = Math.max(1, Math.round(tw * H / W));
+  tiny.width = tw; tiny.height = th;
+  const k = Math.max(tw / img.naturalWidth, th / img.naturalHeight), w = img.naturalWidth * k, h = img.naturalHeight * k;
+  tiny.getContext('2d').drawImage(img, (tw - w) / 2, (th - h) / 2, w, h);
+  g.save(); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.drawImage(tiny, -W * .05, -H * .05, W * 1.1, H * 1.1); g.fillStyle = 'rgba(0,0,0,.08)'; g.fillRect(0, 0, W, H); g.restore();
+}
+const spe = {img:null, fw:0, fh:0, s:1, x:0, y:0, min:1, max:4, cover:1, ptrs:new Map(), pinch:null, resolve:null};
+function speLayout(){
+  const R = spe.ratio, availW = Math.min(innerWidth - 32, 420), availH = innerHeight - 250;
+  let fw = availW, fh = fw / R; if (fh > availH){ fh = Math.max(240, availH); fw = fh * R; }
+  spe.fw = Math.round(fw); spe.fh = Math.round(fh);
+  const fr = $('#speFrame'); fr.style.width = spe.fw + 'px'; fr.style.height = spe.fh + 'px';
+  const dpr = Math.min(2, devicePixelRatio || 1), cv = $('#speCanvas'); cv.width = spe.fw * dpr; cv.height = spe.fh * dpr;
+  const iw = spe.img.naturalWidth, ih = spe.img.naturalHeight;
+  spe.min = Math.min(spe.fw / iw, spe.fh / ih);   // 창 맞춤 (전체가 보임)
+  spe.cover = Math.max(spe.fw / iw, spe.fh / ih); // 꽉 채우기
+  spe.max = spe.cover * 4;
+}
+function speClamp(){
+  spe.s = Math.min(spe.max, Math.max(spe.min, spe.s));
+  const w = spe.img.naturalWidth * spe.s, h = spe.img.naturalHeight * spe.s;
+  const mx = Math.max(0, (w - spe.fw) / 2), my = Math.max(0, (h - spe.fh) / 2); // 화면보다 크면 빈틈 없이, 작으면 가운데
+  spe.x = Math.min(mx, Math.max(-mx, spe.x)); spe.y = Math.min(my, Math.max(-my, spe.y));
+}
+function speDraw(g, W, H){ // 틀(fw×fh) 기준 상태를 W×H 크기로 그린다
+  const k = W / spe.fw, w = spe.img.naturalWidth * spe.s * k, h = spe.img.naturalHeight * spe.s * k;
+  g.clearRect(0, 0, W, H);
+  if (w < W - .5 || h < H - .5) drawBlurCover(g, spe.img, W, H);
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(spe.img, W / 2 + spe.x * k - w / 2, H / 2 + spe.y * k - h / 2, w, h);
+}
+function speRender(){
+  speClamp();
+  const cv = $('#speCanvas'); speDraw(cv.getContext('2d'), cv.width, cv.height);
+  // 슬라이더: 창 맞춤(0) ~ 최대(1000), 로그 눈금
+  $('#speZoom').value = Math.round(1000 * Math.log(spe.s / spe.min) / Math.log(spe.max / spe.min));
+  const fit = Math.abs(spe.s - spe.min) < 1e-6, fill = Math.abs(spe.s - spe.cover) < 1e-6 && !fit;
+  $('#spEditor [data-act=fit]').classList.toggle('on', fit);
+  $('#spEditor [data-act=fill]').classList.toggle('on', fill);
+}
+function speZoomAt(ns, cx, cy){ // 화면의 (cx,cy) 지점을 기준으로 확대·축소
+  ns = Math.min(spe.max, Math.max(spe.min, ns));
+  const r = ns / spe.s; spe.x = cx - (cx - spe.x) * r; spe.y = cy - (cy - spe.y) * r; spe.s = ns; speRender();
+}
+// opts: {ratio 가로/세로, title, step, guide:'splash'|'cell', out:'image'|'rect', rect:{x,y,w,h} 이전 범위}
+function cropEditor(img, opts){
+  return new Promise(resolve => {
+    spe.img = img; spe.resolve = resolve; spe.ptrs.clear(); spe.pinch = null;
+    spe.ratio = opts.ratio; spe.out = opts.out || 'image';
+    $('#speTitle').textContent = opts.title || '사진 위치 맞추기';
+    $('#speStep').textContent = opts.step || '';
+    $('#speGuideSplash').hidden = opts.guide !== 'splash'; $('#speGuideCell').hidden = opts.guide !== 'cell';
+    $('#spEditor').classList.add('open'); speLayout();
+    const r = opts.rect, iw = img.naturalWidth, ih = img.naturalHeight;
+    if (r && r.w > 0){ // 전에 고른 범위에서 이어서
+      spe.s = spe.fw / (r.w * iw);
+      const left = -r.x * iw * spe.s, top = -r.y * ih * spe.s;
+      spe.x = left + iw * spe.s / 2 - spe.fw / 2; spe.y = top + ih * spe.s / 2 - spe.fh / 2;
+    } else { spe.s = opts.start === 'fit' ? spe.min : spe.cover; spe.x = spe.y = 0; } // 시작 화면은 꽉 채움, 달력 칸은 창 맞춤에서 시작
+    speRender();
+  });
+}
+// 달력 칸 비율(가로/세로) — 지금 화면의 실제 칸 크기, 없으면 휴대폰 기준값
+function cellRatio(){
+  const c = document.querySelector('.cell[data-date]');
+  if (c){ const r = c.getBoundingClientRect(); if (r.width && r.height) return r.width / r.height; }
+  return 0.6;
+}
+async function coverCropFor(p, rect){
+  let rec = await store.get(p.id);
+  if (SERVER && !rec?.full){ try { const full = await blobToDataURL(await (await api('GET', `/api/photos/${p.id}/full`)).blob()); rec = {id:p.id, thumb:rec?.thumb || thumbs[p.id], full}; await store.put(rec); } catch(e){} }
+  const src = rec?.full || rec?.thumb || thumbs[p.id]; if (!src) return null;
+  const img = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }).catch(() => null);
+  if (!img) return null;
+  return cropEditor(img, {ratio:cellRatio(), guide:'cell', out:'rect', rect, start:'fit', title:'달력에 보일 부분 맞추기', step:`${md(p.date)} 칸 비율`});
+}
+const splashEditor = (img, step) => cropEditor(img, {ratio:screenRatio(), step, guide:'splash', out:'image', title:'시작 화면 사진 맞추기'});
+// 보이는 범위를 사진 기준 비율로: x,y = 왼쪽 위, w,h = 너비·높이 (1보다 크면 사진보다 넓게 = 여백)
+function speRect(){
+  const iw = spe.img.naturalWidth * spe.s, ih = spe.img.naturalHeight * spe.s;
+  const left = spe.fw / 2 + spe.x - iw / 2, top = spe.fh / 2 + spe.y - ih / 2;
+  const r = v => Math.round(v * 10000) / 10000;
+  return {x:r(-left / iw), y:r(-top / ih), w:r(spe.fw / iw), h:r(spe.fh / ih)};
+}
+function speClose(result){
+  $('#spEditor').classList.remove('open');
+  const done = spe.resolve; spe.resolve = null; spe.img = result ? spe.img : null;
+  done && done(result);
+}
+function speExport(){
+  const R = spe.fw / spe.fh, W = 720, H = Math.round(W / R), c = document.createElement('canvas');
+  c.width = W; c.height = H; speDraw(c.getContext('2d'), W, H);
+  return c.toDataURL('image/jpeg', .84);
+}
+(() => {
+  const fr = $('#speFrame'), local = e => { const r = fr.getBoundingClientRect(); return [e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2]; };
+  fr.addEventListener('pointerdown', e => { try { fr.setPointerCapture(e.pointerId); } catch(err){} spe.ptrs.set(e.pointerId, local(e)); spe.pinch = null; });
+  fr.addEventListener('pointermove', e => {
+    if (!spe.ptrs.has(e.pointerId)) return;
+    const prev = spe.ptrs.get(e.pointerId), cur = local(e); spe.ptrs.set(e.pointerId, cur);
+    if (spe.ptrs.size === 1){ spe.x += cur[0] - prev[0]; spe.y += cur[1] - prev[1]; speRender(); return; }
+    const [a, b] = [...spe.ptrs.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]), mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    if (spe.pinch){ spe.x += mid[0] - spe.pinch.mid[0]; spe.y += mid[1] - spe.pinch.mid[1]; speZoomAt(spe.s * d / spe.pinch.d, mid[0], mid[1]); }
+    spe.pinch = {d, mid};
+  });
+  const up = e => { spe.ptrs.delete(e.pointerId); spe.pinch = null; };
+  fr.addEventListener('pointerup', up); fr.addEventListener('pointercancel', up);
+  fr.addEventListener('wheel', e => { e.preventDefault(); const [x, y] = local(e); speZoomAt(spe.s * Math.exp(-e.deltaY * .0015), x, y); }, {passive:false});
+  $('#speZoom').addEventListener('input', e => speZoomAt(spe.min * Math.pow(spe.max / spe.min, e.target.value / 1000), 0, 0));
+  $('#spEditor').addEventListener('click', e => {
+    const a = e.target.closest('[data-act]')?.dataset.act; if (!a) return;
+    if (a === 'fit'){ spe.s = spe.min; spe.x = spe.y = 0; speRender(); }
+    if (a === 'fill'){ spe.s = spe.cover; spe.x = spe.y = 0; speRender(); }
+    if (a === 'cancel') speClose(null);
+    if (a === 'save') speClose(spe.out === 'rect' ? speRect() : speExport());
+  });
+  addEventListener('resize', () => { if ($('#spEditor').classList.contains('open')){ const keep = spe.s / spe.min; speLayout(); spe.s = spe.min * keep; speRender(); } });
+})();
+
 /* ===================== 앱 시작 화면 — 사진 위에 하트를 한 붓으로 그리기 ===================== */
-let splashUrl = null;
+let splashUrls = {}, splashCur = null; // id → 사진, 이번에 보여줄 사진
+// 앱을 켤 때마다 등록된 사진 중 하나를 고른다 (2장 이상이면 바로 전에 나온 사진은 피함)
+function splashPick(id){
+  const ids = (S.splashes || []).map(x => x.id).filter(i => splashUrls[i]);
+  if (!ids.length) return splashCur = null;
+  if (!id || !splashUrls[id]){
+    let last = null; try { last = localStorage.getItem('woorisai.splashLast'); } catch(e){}
+    const pool = ids.length > 1 ? ids.filter(i => i !== last) : ids;
+    id = pool[Math.floor(Math.random() * pool.length)];
+  }
+  try { localStorage.setItem('woorisai.splashLast', id); } catch(e){}
+  splashCur = splashUrls[id]; sp.curId = id;
+  return splashCur;
+}
 const SPLASH_MIN = 2200, SPLASH_MAX = 3200, SPLASH_DRAW = 1600;
 const sp = {start:performance.now(), raf:0, ready:false, dust:[], W:0, H:0, timer:0};
 const spCv = $('#spCanvas'), spCtx = spCv.getContext('2d');
@@ -1652,13 +1964,14 @@ function spFrame(now){
 }
 function splashSetPhoto(){
   const ph = $('#spPhoto');
-  if (splashUrl){ ph.style.backgroundImage = `url(${splashUrl})`; ph.classList.remove('on'); void ph.offsetWidth; ph.classList.add('on'); }
+  if (splashCur){ ph.style.backgroundImage = `url(${splashCur})`; ph.classList.remove('on'); void ph.offsetWidth; ph.classList.add('on'); }
   else { ph.style.backgroundImage = ''; ph.classList.remove('on'); }
 }
 function splashText(){
   $('#spSub').textContent = S.couple ? `${meName()} 💗 ${ptName()} · D+${dPlus().toLocaleString()}` : '둘만의 커플 캘린더';
 }
-function splashShow(preview){
+function splashShow(preview, id){
+  splashPick(id);
   cancelAnimationFrame(sp.raf); clearTimeout(sp.timer);
   const el = $('#splash'); el.style.display = ''; el.classList.remove('hide');
   const br = el.querySelector('.br'); br.style.animation = 'none'; void br.offsetWidth; br.style.animation = '';
@@ -1676,15 +1989,23 @@ function splashReady(){ sp.ready = true; }
 splashText(); spSize(); sp.raf = requestAnimationFrame(spFrame);
 addEventListener('resize', () => { if ($('#splash').style.display !== 'none') spSize(); });
 const splashBusy = {};
-async function syncSplash(ver){
-  ver = ver || 0;
-  if ((S.splashVer || 0) === ver || splashBusy[ver]) return;
-  if (!ver){ S.splashVer = 0; save(); await store.del('__splash'); splashUrl = null; softRender(); return; }
-  splashBusy[ver] = true;
-  try {
-    const url = await blobToDataURL(await (await api('GET', '/api/couple/splash')).blob());
-    await store.put({id:'__splash', url, ver}); splashUrl = url; S.splashVer = ver; save(); softRender();
-  } catch(e){} finally { delete splashBusy[ver]; }
+// 서버 목록과 맞추기: 바뀌거나 지워진 건 지우고, 새로 생긴 건 받아 둔다
+async function syncSplashes(list){
+  list = Array.isArray(list) ? list : [];
+  const want = new Map(list.map(x => [x.id, x.ver]));
+  let changed = false;
+  for (const x of S.splashes || []) if (want.get(x.id) !== x.ver){ delete splashUrls[x.id]; store.del('__splash:' + x.id); changed = true; }
+  const before = JSON.stringify(S.splashes || []);
+  S.splashes = list; if (before !== JSON.stringify(list)){ save(); changed = true; }
+  for (const x of list){
+    if (splashUrls[x.id] || splashBusy[x.id]) continue;
+    splashBusy[x.id] = true;
+    try {
+      const url = await blobToDataURL(await (await api('GET', '/api/couple/splash/' + x.id)).blob());
+      await store.put({id:'__splash:' + x.id, url, ver:x.ver}); splashUrls[x.id] = url; changed = true;
+    } catch(e){} finally { delete splashBusy[x.id]; }
+  }
+  if (changed) softRender();
 }
 
 // 프로필 사진: 가운데를 정사각형으로 잘라 작게 줄인다
@@ -1730,7 +2051,7 @@ $('#fileInput').addEventListener('change', async e => {
 /* ===================== 시작 ===================== */
 function gotoDate(ds){
   if (!S.couple || !/^\d{4}-\d{2}-\d{2}$/.test(ds || '')) return false;
-  const d = pd(ds); ui.tab = 'cal'; ui.ym = [d.getFullYear(), d.getMonth()]; render(); openDay(ds);
+  const d = pd(ds); ui.tab = 'cal'; ui.ym = [d.getFullYear(), d.getMonth()]; ui.wk = weekStart(ds); render(); openDay(ds);
   return true;
 }
 // 알림 종류에 맞는 화면으로 이동하고 그 부분을 반짝여 보여준다
@@ -1744,6 +2065,7 @@ function openTarget(kind, date){
   if (!S.couple) return;
   syncNow();
   if (kind !== 'question' && kind !== 'couple' && gotoDate(date)){
+    if (kind === 'check'){ const ev = S.events.find(e => ckOn(e, date).length); if (ev) openDay(date, ev.id); }
     setTimeout(() => flash(document.getElementById(TARGET_SECTION[kind] || 'sec-event')), 350);
     return;
   }
@@ -1761,10 +2083,15 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
 (async () => {
   await store.open();
   for (const p of await store.all()){
-    if (p.id === '__splash'){ splashUrl = p.url; continue; }
+    if (p.id === '__splash'){ // 예전 한 장짜리 → 목록으로 옮김
+      splashUrls.legacy = p.url; store.put({id:'__splash:legacy', url:p.url, ver:p.ver}); store.del('__splash');
+      if (!(S.splashes || []).length) S.splashes = [{id:'legacy', ver:p.ver || S.splashVer || 1}];
+      continue;
+    }
+    if (p.id.startsWith('__splash:')){ splashUrls[p.id.slice(9)] = p.url; continue; }
     thumbs[p.id] = p.thumb;
   }
-  splashSetPhoto(); splashText();
+  splashPick(); splashSetPhoto(); splashText();
   if (!SERVER) S.photos = S.photos.filter(p => thumbs[p.id]);
   const qs = new URLSearchParams(location.search), openDate = qs.get('date'), openKind = qs.get('kind');
   if (openDate || openKind || qs.has('api')) history.replaceState(null, '', location.pathname);
