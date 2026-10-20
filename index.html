@@ -138,7 +138,9 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 .cell{position:relative;border-radius:14px;background:#fff;overflow:hidden;padding:4px 3px;display:flex;flex-direction:column;cursor:pointer;min-width:0;box-shadow:0 2px 8px rgba(255,141,179,.08)}
 .cell.out{background:transparent;box-shadow:none}
 .cell.out .dnum{opacity:.35}
-.cell .cover{position:absolute;inset:0;background-size:cover;background-position:center}
+/* 대표사진은 자르지 않고 칸 안에 전체가 보이게(창 맞춤). 남는 여백은 같은 사진을 흐리게 깔아 채운다 */
+.cell .cover-bg{position:absolute;inset:-8px;background:center/cover no-repeat;filter:blur(7px) saturate(1.1);opacity:.75}
+.cell .cover{position:absolute;inset:0;background-size:contain;background-repeat:no-repeat;background-position:center}
 .cell.has-cover:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(80,30,50,.25),rgba(0,0,0,0) 40%,rgba(80,30,50,.3));z-index:1}
 .dnum{position:relative;z-index:2;font-size:12px;font-weight:800;padding:2px 4px;line-height:1.1;align-self:flex-start;border-radius:8px}
 .cell.sun .dnum{color:#F07A95}.cell.sat .dnum{color:#7FA8E8}
@@ -925,7 +927,7 @@ function calView(){
       return `<i class="chip ${!s&&dow!==0?'cl':''} ${!f&&dow!==6?'cr':''}" style="--c:var(--${e.cat})">${label}</i>`;
     }).join('') + (evs.length>max ? `<span class="more">+${evs.length-max}</span>` : '');
     cells += `<div class="cell ${th?'has-cover':''} ${ds===t?'today':''} ${dow===0?'sun':dow===6?'sat':''}" data-action="openDay" data-date="${ds}">
-      ${th ? `<div class="cover" style="background-image:url(${th})"></div>` : ''}
+      ${th ? `<div class="cover-bg" style="background-image:url(${th})"></div><div class="cover" style="background-image:url(${th})"></div>` : ''}
       <span class="dnum">${d.getDate()}</span>${ind ? `<span class="ind">${ind}</span>` : ''}
       <div class="chips">${chips}</div></div>`;
   }
