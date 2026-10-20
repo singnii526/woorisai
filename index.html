@@ -302,12 +302,28 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 .ntf.unread .tx{font-weight:800}
 .ntf .tx{flex:1;font-size:14px;line-height:1.5}
 .ntf time{display:block;font-size:11px;color:var(--sub);font-weight:400}
+/* ── 앱 시작 화면 (로딩) ── */
+#splash{position:fixed;inset:0;z-index:200;display:flex;justify-content:center;background:#FBE4EC;transition:opacity .45s ease}
+#splash.hide{opacity:0;pointer-events:none}
+#splash .sc{position:relative;width:100%;max-width:480px;height:100%;overflow:hidden;background:linear-gradient(160deg,#FFD6E5,#FFB3CC 55%,#FFCDB8)}
+#splash .ph{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transform:scale(1.06);transition:opacity .35s ease}
+#splash .ph.on{opacity:1;animation:kenburns 6s ease-out forwards}
+@keyframes kenburns{to{transform:scale(1)}}
+#splash .sh{position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(transparent,rgba(40,10,25,.4))}
+#splash canvas{position:absolute;inset:0;width:100%;height:100%}
+#splash .br{position:absolute;left:0;right:0;bottom:calc(46px + env(safe-area-inset-bottom,0px));text-align:center;color:#fff;text-shadow:0 2px 10px rgba(80,20,50,.5);opacity:0;animation:spUp .8s ease .9s forwards}
+#splash .br b{display:block;font-family:var(--cute);font-weight:400;font-size:32px;letter-spacing:1px}
+#splash .br span{font-size:13px;font-weight:800;opacity:.95}
+@keyframes spUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.set .sp{width:44px;height:60px;border-radius:10px;object-fit:cover;flex:none;background:linear-gradient(160deg,#FFD6E5,#FFB3CC);display:grid;place-items:center;font-size:18px}
 .flash{animation:flash 1.6s ease}
 @keyframes flash{0%,100%{box-shadow:0 0 0 0 rgba(240,106,152,0)}25%,60%{box-shadow:0 0 0 4px rgba(240,106,152,.45);background-color:#FFF0F5}}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--pri-deep);margin-top:7px;flex:none}
 </style>
 </head>
 <body>
+<div id="splash"><div class="sc"><div class="ph" id="spPhoto"></div><div class="sh"></div><canvas id="spCanvas"></canvas>
+  <div class="br"><b>우리사이</b><span id="spSub"></span></div></div></div>
 <div id="app"></div>
 <div id="sheetWrap" class="sheet-wrap"><div class="sheet-dim" data-action="closeSheet"></div><div class="sheet" id="sheet"></div></div>
 <div id="viewer" class="viewer"></div>
@@ -315,6 +331,7 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 <div id="toasts"></div>
 <input type="file" id="fileInput" accept="image/*" multiple hidden>
 <input type="file" id="avatarInput" accept="image/*" hidden>
+<input type="file" id="splashInput" accept="image/*" hidden>
 
 <script>
 /* ===================== 설정 ===================== */
@@ -562,6 +579,7 @@ function applyCouple(c){
   S.couple = {id:c.id, code:c.code, start:c.start, myBirthday:S.me?.birthday || '',
     partner:{id:c.partner.id, name:S.me?.partnerAlias || c.partner.name, realName:c.partner.name, birthday:c.partner.birthday}};
   syncAvatar('partner', c.partner.id, c.partner.avatarVer);
+  syncSplash(c.splashVer);
 }
 // 프로필 사진: 서버 버전이 바뀌었을 때만 받아온다
 const avatarBusy = {};
@@ -576,6 +594,7 @@ async function syncAvatar(slot, userId, ver){
   } catch(e){} finally { delete avatarBusy[slot]; }
 }
 function clearShared(){
+  S.splashVer = 0; store.del('__splash'); splashUrl = null;
   delete S.avatars.partner;
   Object.assign(S, {couple:null, pending:null, events:[], photos:[], covers:{}, bucket:[], notifs:[], answers:{}, diary:{}, since:0, outbox:[]});
   for (const k in thumbs) delete thumbs[k];
@@ -991,6 +1010,12 @@ function settingsView(){
   </section>
   <section class="card"><h3>🔐 우리 공간</h3>
     <div class="set"><div class="t"><b>공간 코드</b><span>둘만 아는 코드 · 다른 사람은 입장 불가</span></div><b style="letter-spacing:3px;color:var(--pri)">${c.code}</b></div>
+    <div class="set">${splashUrl ? `<img class="sp" src="${splashUrl}" alt="">` : '<span class="sp">💗</span>'}
+      <div class="t"><b>앱 시작 화면 사진</b><span>앱을 열 때 하트와 함께 나와요${SERVER ? ' · 둘 다 같은 사진' : ''}</span></div>
+      <button class="btn ghost sm" style="width:auto;padding:0 12px" data-action="pickSplash">${splashUrl ? '변경' : '등록'}</button></div>
+    <div class="btns" style="margin:0 0 6px">
+      <button class="btn line sm" data-action="previewSplash">▶ 시작 화면 미리보기</button>
+      ${splashUrl ? '<button class="btn line sm" style="width:auto;padding:0 14px" data-action="removeSplash">사진 지우기</button>' : ''}</div>
     <div class="set"><div class="t"><b>로그인 계정</b><span>${S.user.provider==='kakao' ? '카카오' : '카카오 (데모)'}</span></div></div>
     ${installPrompt ? '<button class="btn ghost sm" style="margin-top:8px" data-action="installApp">📲 홈 화면에 앱 설치</button>'
       : isIOS && !isStandalone() ? '<p class="muted" style="font-size:12px;margin:8px 0 0">📲 Safari 아래 공유 버튼 → "홈 화면에 추가"로 앱처럼 쓸 수 있어요</p>' : ''}
@@ -1280,6 +1305,15 @@ const A = {
     delete S.avatars[slot]; save(); render(); toast('프로필 사진을 지웠어요');
   },
 
+  /* 앱 시작 화면 사진 */
+  pickSplash(){ $('#splashInput').click(); },
+  previewSplash(){ splashShow(true); },
+  async removeSplash(){
+    if (!confirm('시작 화면 사진을 지울까요?' + (SERVER ? ' 상대방 휴대폰에서도 지워져요.' : ''))) return;
+    if (SERVER){ try { await api('DELETE', '/api/couple/splash'); } catch(e){ return toast(e.message); } }
+    S.splashVer = 0; save(); await store.del('__splash'); splashUrl = null; splashSetPhoto(); render(); toast('시작 화면 사진을 지웠어요');
+  },
+
   /* 체크리스트 */
   ckAdd(){
     const inp = $('#ckText'), text = inp.value.trim(); if (!text) return inp.focus();
@@ -1555,6 +1589,102 @@ document.addEventListener('change', async e => {
   }
 });
 document.addEventListener('focusout', () => { if (ui.needRender){ ui.needRender = false; setTimeout(() => { render(); refreshSheet(); }, 0); } });
+$('#splashInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  let url;
+  try { url = resize(await loadImage(f), 1280, .82); } catch(err){ return toast('사진을 읽지 못했어요'); }
+  let ver = Date.now();
+  if (SERVER){
+    toast('사진을 올리는 중…');
+    try { const fd = new FormData(); fd.append('splash', await dataURLToBlob(url), 'splash.jpg'); ver = (await api('POST', '/api/couple/splash', fd)).splashVer; }
+    catch(err){ return toast('사진을 올리지 못했어요: ' + err.message); }
+  }
+  await store.put({id:'__splash', url, ver}); splashUrl = url; S.splashVer = ver; save();
+  splashSetPhoto(); render(); toast('시작 화면 사진을 바꿨어요 💗'); splashShow(true);
+});
+
+/* ===================== 앱 시작 화면 — 사진 위에 하트를 한 붓으로 그리기 ===================== */
+let splashUrl = null;
+const SPLASH_MIN = 2200, SPLASH_MAX = 3200, SPLASH_DRAW = 1600;
+const sp = {start:performance.now(), raf:0, ready:false, dust:[], W:0, H:0, timer:0};
+const spCv = $('#spCanvas'), spCtx = spCv.getContext('2d');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function spSize(){
+  const r = spCv.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+  sp.W = r.width; sp.H = r.height; spCv.width = sp.W*dpr; spCv.height = sp.H*dpr; spCtx.setTransform(dpr,0,0,dpr,0,0);
+}
+function spHeart(t, cx, cy, s){
+  const a = t*Math.PI*2, x = 16*Math.pow(Math.sin(a), 3), y = 13*Math.cos(a) - 5*Math.cos(2*a) - 2*Math.cos(3*a) - Math.cos(4*a);
+  return [cx + x*s, cy - y*s];
+}
+function spStar(x, y, r, a){
+  const g = spCtx; g.save(); g.globalAlpha = a; g.fillStyle = '#fff'; g.shadowColor = 'rgba(255,170,205,.9)'; g.shadowBlur = 8;
+  g.beginPath(); for (let i=0;i<8;i++){ const rr = i%2 ? r*.35 : r*2.4, an = i*Math.PI/4; g.lineTo(x+Math.cos(an)*rr, y+Math.sin(an)*rr); }
+  g.closePath(); g.fill(); g.restore();
+}
+function spFrame(now){
+  const g = spCtx, {W, H} = sp, t = now - sp.start;
+  g.clearRect(0, 0, W, H);
+  const cx = W/2, cy = H*.42, s = W/40, N = 220;
+  const e = reduceMotion ? 1 : Math.min(1, t/SPLASH_DRAW), p = e < .5 ? 2*e*e : 1 - Math.pow(-2*e+2, 2)/2;
+  const breath = e >= 1 ? .82 + .18*Math.sin((t-SPLASH_DRAW)/420) : 1, upto = Math.max(1, Math.floor(N*p));
+  g.save(); g.lineJoin = g.lineCap = 'round';
+  for (const [lw, col, blur] of [[7.7, `rgba(255,150,195,${.28*breath})`, 16], [2.4, `rgba(255,255,255,${.95*breath})`, 10]]){
+    g.beginPath();
+    for (let i=0;i<=upto;i++){ const [x,y] = spHeart(i/N, cx, cy, s); i ? g.lineTo(x,y) : g.moveTo(x,y); }
+    g.strokeStyle = col; g.lineWidth = lw; g.shadowColor = 'rgba(255,120,175,.9)'; g.shadowBlur = blur; g.stroke();
+  }
+  g.restore();
+  // 펜 끝 반짝이와 떨어지는 가루
+  const add = (x, y, n) => { for (let i=0;i<n;i++) sp.dust.push({x, y, vx:(Math.random()-.5)*.6, vy:Math.random()*.7+.15, life:1, r:Math.random()*1.6+.6, star:Math.random()<.25}); };
+  if (p < 1){ const [px, py] = spHeart(upto/N, cx, cy, s); spStar(px, py, 2.6, 1); add(px, py, 2); }
+  else if (Math.random() < .05){ const [x, y] = spHeart(Math.random(), cx, cy, s); add(x, y, 1); }
+  sp.dust = sp.dust.filter(d => (d.life -= .022) > 0);
+  for (const d of sp.dust){
+    d.x += d.vx; d.y += d.vy; const a = d.life*(.55 + .45*Math.sin(d.life*20));
+    if (d.star) spStar(d.x, d.y, d.r, a); else { g.globalAlpha = a; g.fillStyle = '#fff'; g.beginPath(); g.arc(d.x, d.y, d.r, 0, 7); g.fill(); g.globalAlpha = 1; }
+  }
+  // 준비가 끝나고 최소 시간이 지났거나, 최대 시간이 지나면 닫는다
+  if ((sp.ready && t >= SPLASH_MIN) || t >= SPLASH_MAX){ splashHide(); return; }
+  sp.raf = requestAnimationFrame(spFrame);
+}
+function splashSetPhoto(){
+  const ph = $('#spPhoto');
+  if (splashUrl){ ph.style.backgroundImage = `url(${splashUrl})`; ph.classList.remove('on'); void ph.offsetWidth; ph.classList.add('on'); }
+  else { ph.style.backgroundImage = ''; ph.classList.remove('on'); }
+}
+function splashText(){
+  $('#spSub').textContent = S.couple ? `${meName()} 💗 ${ptName()} · D+${dPlus().toLocaleString()}` : '둘만의 커플 캘린더';
+}
+function splashShow(preview){
+  cancelAnimationFrame(sp.raf); clearTimeout(sp.timer);
+  const el = $('#splash'); el.style.display = ''; el.classList.remove('hide');
+  const br = el.querySelector('.br'); br.style.animation = 'none'; void br.offsetWidth; br.style.animation = '';
+  splashText(); splashSetPhoto(); spSize();
+  sp.start = performance.now(); sp.dust = []; if (preview) sp.ready = true;
+  sp.raf = requestAnimationFrame(spFrame);
+}
+function splashHide(){
+  cancelAnimationFrame(sp.raf);
+  const el = $('#splash'); el.classList.add('hide');
+  sp.timer = setTimeout(() => { el.style.display = 'none'; }, 500);
+}
+function splashReady(){ sp.ready = true; }
+// 사진 없이 바로 시작 (사진은 저장소가 열리면 이어서 깔린다)
+splashText(); spSize(); sp.raf = requestAnimationFrame(spFrame);
+addEventListener('resize', () => { if ($('#splash').style.display !== 'none') spSize(); });
+const splashBusy = {};
+async function syncSplash(ver){
+  ver = ver || 0;
+  if ((S.splashVer || 0) === ver || splashBusy[ver]) return;
+  if (!ver){ S.splashVer = 0; save(); await store.del('__splash'); splashUrl = null; softRender(); return; }
+  splashBusy[ver] = true;
+  try {
+    const url = await blobToDataURL(await (await api('GET', '/api/couple/splash')).blob());
+    await store.put({id:'__splash', url, ver}); splashUrl = url; S.splashVer = ver; save(); softRender();
+  } catch(e){} finally { delete splashBusy[ver]; }
+}
+
 // 프로필 사진: 가운데를 정사각형으로 잘라 작게 줄인다
 function squareCrop(img, size){
   const w = img.naturalWidth, h = img.naturalHeight, m = Math.min(w, h);
@@ -1628,24 +1758,29 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
 
 (async () => {
   await store.open();
-  for (const p of await store.all()) thumbs[p.id] = p.thumb;
+  for (const p of await store.all()){
+    if (p.id === '__splash'){ splashUrl = p.url; continue; }
+    thumbs[p.id] = p.thumb;
+  }
+  splashSetPhoto(); splashText();
   if (!SERVER) S.photos = S.photos.filter(p => thumbs[p.id]);
   const qs = new URLSearchParams(location.search), openDate = qs.get('date'), openKind = qs.get('kind');
   if (openDate || openKind || qs.has('api')) history.replaceState(null, '', location.pathname);
   if (!SERVER){
     if (S.pending && S.pending.expires < Date.now()){ S.pending = null; save(); }
-    render();
-    setTimeout(checkReminders, 1200);
+    render(); splashReady();
+    setTimeout(checkReminders, 2600);
     return;
   }
   // 서버 모드: 카카오 로그인 후 돌아오면 주소 # 뒤에 로그인 토큰이 붙어 있다
   const m = location.hash.match(/wt_token=([a-f0-9]{48})/);
   if (m){ token = m[1]; try { localStorage.setItem(TOKEN_KEY, token); } catch(e){} history.replaceState(null, '', location.pathname); }
-  if (!token){ if (S.user) clearShared(); S.user = null; save(); render(); return; }
+  if (!token){ if (S.user) clearShared(); S.user = null; save(); render(); splashReady(); return; }
   // 휴대폰이 저장 공간을 정리할 때 로그인 정보·사진 사본을 지우지 않도록 요청
   try { navigator.storage?.persist?.(); } catch(e){}
   render(); // 저장해 둔 화면 먼저
   try { await loadMe(); } catch(e){ if (e.status !== 401) toast(S.user ? '오프라인이에요. 저장된 기록을 보여드려요' : e.message); }
+  splashReady();
   if (openDate || openKind) openTarget(openKind, openDate);
   setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 20000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
