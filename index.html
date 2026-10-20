@@ -302,6 +302,8 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 .ntf.unread .tx{font-weight:800}
 .ntf .tx{flex:1;font-size:14px;line-height:1.5}
 .ntf time{display:block;font-size:11px;color:var(--sub);font-weight:400}
+.flash{animation:flash 1.6s ease}
+@keyframes flash{0%,100%{box-shadow:0 0 0 0 rgba(240,106,152,0)}25%,60%{box-shadow:0 0 0 4px rgba(240,106,152,.45);background-color:#FFF0F5}}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--pri-deep);margin-top:7px;flex:none}
 </style>
 </head>
@@ -318,6 +320,7 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 /* ===================== 설정 ===================== */
 // 서버 주소 — 비워두면 이 기기 안에서만 동작하는 데모 모드. ../couple-share-server/tools/deploy.mjs 가 채운다.
 // 개발할 때는 주소 뒤에 ?api=http://localhost:8787 을 붙이면 그 서버를 쓴다 (?api= 로 비우면 원래대로).
+// ?api=demo 를 붙이면 서버 없이 이 기기 안에서만 동작하는 데모 모드로 연다.
 const DEFAULT_API = 'https://woorisai-api.ireum-gyeol-server.workers.dev';
 const API_BASE = (() => {
   let v = DEFAULT_API;
@@ -326,7 +329,7 @@ const API_BASE = (() => {
     if (q !== null){ if (q) localStorage.setItem('woorisai.api', q); else localStorage.removeItem('woorisai.api'); }
     v = localStorage.getItem('woorisai.api') || DEFAULT_API;
   } catch(e){}
-  return v.replace(/\/+$/, '');
+  return v === 'demo' ? '' : v.replace(/\/+$/, '');
 })();
 const SERVER = !!API_BASE;
 
@@ -465,8 +468,12 @@ async function api(method, path, body){
   if (token) opt.headers.Authorization = 'Bearer ' + token;
   if (body instanceof FormData) opt.body = body;
   else if (body !== undefined){ opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+  // 휴대폰이 앱을 잠시 멈췄다 깨우면 요청이 영영 안 끝나는 경우가 있어 시간 제한을 둔다
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), body instanceof FormData ? 90000 : 20000);
+  opt.signal = ctl.signal;
   let r;
   try { r = await fetch(API_BASE + path, opt); } catch(e){ throw new Error('인터넷 연결을 확인해 주세요'); }
+  finally { clearTimeout(timer); }
   if (r.status === 401 && token){ signedOut(); const e = new Error('다시 로그인해 주세요'); e.status = 401; throw e; }
   if (!(r.headers.get('Content-Type') || '').includes('json')){
     if (!r.ok){ const e = new Error('서버 오류가 났어요'); e.status = r.status; throw e; }
@@ -596,18 +603,31 @@ async function syncNow(){
   syncing = true;
   try {
     await flush();
-    const r = await api('GET', '/api/sync?since=' + Math.max(0, (S.since || 0) - 5000));
+    const full = !S.fullAt || Date.now() - S.fullAt > 864e5; // 하루 한 번은 처음부터 다시 맞춘다
+    let since = full ? 0 : Math.max(0, (S.since || 0) - 5000), r, changed = 0;
+    const notifs = [];
+    for (let page = 0; page < 50; page++){
+      r = await api('GET', '/api/sync?since=' + since);
+      r.items.forEach(applyItem); changed += r.items.length;
+      notifs.push(...r.notifs);
+      if (!r.more) break;
+      since = r.now;
+    }
     applyMe(r.me); applyCouple(r.couple);
-    r.items.forEach(applyItem);
+    (r.answers || []).forEach(it => { // 최근 질문 답은 매번 확인
+      const box = S.answers[it.id.slice(0,10)] ||= {}, who = it.author === myId() ? 'me' : 'partner';
+      if (box[who] !== it.data.text){ box[who] = it.data.text; changed++; }
+    });
+    if (full) S.fullAt = Date.now();
     const fresh = [];
-    for (const n of [...r.notifs].reverse()){
+    for (const n of [...notifs].reverse()){
       if (S.notifs.some(x => x.id === n.id)) continue;
       const it = {id:n.id, kind:n.kind, text:n.text, who:n.from ? 'partner' : 'system', date:n.date, time:n.createdAt, read:false};
       S.notifs.unshift(it); fresh.push(it);
     }
     S.notifs = S.notifs.slice(0, 150);
     S.since = r.now; save();
-    if (r.items.length || fresh.length) softRender();
+    if (changed || fresh.length) softRender();
     const last = fresh[fresh.length - 1];
     if (last && Date.now() - last.time < 120e3 && S.settings[last.kind] !== false) showBanner(last);
     fetchMissingThumbs();
@@ -724,7 +744,7 @@ function showBanner(n){
   const b = $('#banner');
   const em = KIND_ICON[n.kind] || '💌';
   b.innerHTML = `<div class="bi">${em}</div><div class="bt"><b><span>우리사이</span><span>지금</span></b>${esc(n.text)}</div>`;
-  b.dataset.date = n.date || ''; b.dataset.kind = n.kind;
+  b.dataset.date = n.date || ''; b.dataset.kind = n.kind; b.dataset.id = n.id || '';
   b.classList.add('show'); clearTimeout(bannerTimer);
   bannerTimer = setTimeout(() => b.classList.remove('show'), 4200);
 }
@@ -848,7 +868,7 @@ function homeView(){
       <span class="dd">${ddLabel(e.dd)}</span></div>`).join('') : '<div class="empty">예정된 일정이 없어요</div>'}
   </section>
   ${checklistCard()}
-  <section class="card"><h3>오늘의 질문 <small>둘 다 답해야 공개돼요</small></h3>
+  <section class="card" id="qCard"><h3>오늘의 질문 <small>둘 다 답해야 공개돼요</small></h3>
     <p class="qtext">Q. ${esc(QUESTIONS[qi])}</p>
     ${ans.me ? `
       <div class="ans"><small>${esc(meName())}</small>${esc(ans.me)}</div>
@@ -945,6 +965,17 @@ function settingsView(){
   const sw = (key, title, desc, dis) => `<div class="set"><div class="t"><b>${title}</b><span>${desc}</span></div>
     <label class="sw"><input type="checkbox" data-set="${key}" ${st[key]?'checked':''} ${dis?'disabled':''}><span></span></label></div>`;
   return `<div class="page-h"><h2>설정</h2></div>
+  <section class="card"><h3>💑 우리 정보</h3>
+    <div class="set">${S.avatars.me ? `<img class="pf" src="${S.avatars.me.url}" alt="">` : `<span class="pf">${esc(meName().slice(0,1))}</span>`}
+      <div class="t"><b>내 프로필 사진</b><span>홈 화면 하트 옆에 나와요${SERVER ? ' · 상대방에게도 보여요' : ''}</span></div>
+      <button class="btn ghost sm" style="width:auto;padding:0 14px" data-action="pickAvatar" data-slot="me">${S.avatars.me ? '변경' : '등록'}</button>
+      ${S.avatars.me ? '<button class="btn line sm" style="width:auto;padding:0 12px" data-action="removeAvatar" data-slot="me">삭제</button>' : ''}</div>
+    <div class="set"><div class="t"><b>내 이름</b></div><input class="inp" data-field="user.name" value="${esc(meName())}" maxlength="10"></div>
+    <div class="set"><div class="t"><b>내 생일</b></div><input class="inp" type="date" data-field="couple.myBirthday" value="${c.myBirthday||''}"></div>
+    <div class="set"><div class="t"><b>${SERVER ? '상대방 애칭' : '상대방 이름'}</b>${SERVER ? '<span>나에게만 이렇게 보여요</span>' : ''}</div><input class="inp" data-field="couple.partner.name" value="${esc(ptName())}" maxlength="10"></div>
+    <div class="set"><div class="t"><b>상대방 생일</b>${SERVER ? '<span>상대방이 직접 입력해요</span>' : ''}</div><input class="inp" type="date" data-field="couple.partner.birthday" value="${c.partner.birthday||''}" ${SERVER ? 'disabled' : ''}></div>
+    <div class="set"><div class="t"><b>사귄 날</b></div><input class="inp" type="date" data-field="couple.start" value="${c.start}" max="${todayStr()}"></div>
+  </section>
   <section class="card"><h3>🔔 알림 설정</h3>
     ${sw('push','휴대폰 알림 받기', perm==='denied' ? '브라우저 설정에서 알림이 차단됨'
       : isIOS && !isStandalone() ? '아이폰은 공유 → 홈 화면에 추가한 앱에서 켤 수 있어요'
@@ -957,17 +988,6 @@ function settingsView(){
     ${sw('question','오늘의 질문','상대방이 답하면 알려줘요')}
     ${sw('quiet','방해금지 시간','밤 11시 ~ 아침 8시에는 조용히')}
     <button class="btn line sm" style="margin-top:8px" data-action="testNotif">알림 미리보기</button>
-  </section>
-  <section class="card"><h3>💑 우리 정보</h3>
-    <div class="set">${S.avatars.me ? `<img class="pf" src="${S.avatars.me.url}" alt="">` : `<span class="pf">${esc(meName().slice(0,1))}</span>`}
-      <div class="t"><b>내 프로필 사진</b><span>홈 화면 하트 옆에 나와요${SERVER ? ' · 상대방에게도 보여요' : ''}</span></div>
-      <button class="btn ghost sm" style="width:auto;padding:0 14px" data-action="pickAvatar" data-slot="me">${S.avatars.me ? '변경' : '등록'}</button>
-      ${S.avatars.me ? '<button class="btn line sm" style="width:auto;padding:0 12px" data-action="removeAvatar" data-slot="me">삭제</button>' : ''}</div>
-    <div class="set"><div class="t"><b>내 이름</b></div><input class="inp" data-field="user.name" value="${esc(meName())}" maxlength="10"></div>
-    <div class="set"><div class="t"><b>내 생일</b></div><input class="inp" type="date" data-field="couple.myBirthday" value="${c.myBirthday||''}"></div>
-    <div class="set"><div class="t"><b>${SERVER ? '상대방 애칭' : '상대방 이름'}</b>${SERVER ? '<span>나에게만 이렇게 보여요</span>' : ''}</div><input class="inp" data-field="couple.partner.name" value="${esc(ptName())}" maxlength="10"></div>
-    <div class="set"><div class="t"><b>상대방 생일</b>${SERVER ? '<span>상대방이 직접 입력해요</span>' : ''}</div><input class="inp" type="date" data-field="couple.partner.birthday" value="${c.partner.birthday||''}" ${SERVER ? 'disabled' : ''}></div>
-    <div class="set"><div class="t"><b>사귄 날</b></div><input class="inp" type="date" data-field="couple.start" value="${c.start}" max="${todayStr()}"></div>
   </section>
   <section class="card"><h3>🔐 우리 공간</h3>
     <div class="set"><div class="t"><b>공간 코드</b><span>둘만 아는 코드 · 다른 사람은 입장 불가</span></div><b style="letter-spacing:3px;color:var(--pri)">${c.code}</b></div>
@@ -1007,14 +1027,14 @@ function openDay(ds){
   const evs = eventsOn(ds), cov = S.covers[ds];
   openSheet(`
     <div class="sh-title"><h2>${mdw(ds)}</h2><button class="btn ghost sm" style="width:auto;padding:0 14px" data-action="newEvent" data-date="${ds}">+ 일정</button></div>
-    <div class="sec-t">일정</div>
+    <div class="sec-t" id="sec-event">일정</div>
     ${evs.length ? evs.map(e => `<div class="ev-wrap" style="--c:var(--${e.cat})"><div class="erow" ${e.auto ? '' : `data-action="editEvent" data-id="${e.id}"`}>
       <span style="font-size:20px">${CATS[e.cat].emoji}</span>
       <div class="t"><b>${esc(e.title)}</b><span>${e.auto ? '자동 기념일' : `${e.end && e.end!==e.date ? `${md(e.date)} ~ ${md(e.end)} · ` : ''}${esc(e.author==='partner'?ptName():meName())} 작성${e.memo ? ' · '+esc(e.memo) : ''}`}</span></div>
       <span class="tag">${CATS[e.cat].name}</span></div>${e.auto ? '' : ckBlock(e, ds)}</div>`).join('') : '<div class="empty" style="padding:6px 0">일정이 없어요</div>'}
-    <div class="sec-t">일기 · 하고 싶은 말</div>
+    <div class="sec-t" id="sec-diary">일기 · 하고 싶은 말</div>
     ${diaryBlock(ds)}
-    <div class="sec-t"><span>사진 ${photos.length}장</span><span style="font-weight:500">★ 누르면 캘린더 대표사진</span></div>
+    <div class="sec-t" id="sec-photo"><span>사진 ${photos.length}장</span><span style="font-weight:500">★ 누르면 캘린더 대표사진</span></div>
     <div class="pgrid">
       ${photos.map(p => `<div class="ph ${cov===p.id?'cov':''}" style="background-image:url(${thumbs[p.id]})" data-action="viewPhoto" data-id="${p.id}">
         <button class="star" data-action="setCover" data-id="${p.id}" aria-label="대표사진">${cov===p.id?'★':'☆'}</button>
@@ -1375,15 +1395,13 @@ const A = {
   },
   readAll(){ S.notifs.forEach(n => n.read = true); save(); render(); A.openNotifs(); },
   openNotif(el){
-    const n = S.notifs.find(x => x.id === el.dataset.id); n.read = true; save();
-    if (n.date){ const d = pd(n.date); ui.tab = 'cal'; ui.ym = [d.getFullYear(), d.getMonth()]; render(); openDay(n.date); }
-    else { ui.tab = 'home'; render(); closeSheet(); }
+    const n = S.notifs.find(x => x.id === el.dataset.id); if (!n) return;
+    n.read = true; save(); openTarget(n.kind, n.date);
   },
   bannerClick(el){
     el.classList.remove('show');
-    const n = S.notifs[0]; if (n) n.read = true; save();
-    if (el.dataset.date){ const d = pd(el.dataset.date); ui.tab = 'cal'; ui.ym = [d.getFullYear(), d.getMonth()]; render(); openDay(el.dataset.date); }
-    else { ui.tab = 'home'; render(); }
+    const n = S.notifs.find(x => x.id === el.dataset.id); if (n){ n.read = true; save(); }
+    openTarget(el.dataset.kind, el.dataset.date);
   },
   testNotif(){ showBanner({kind:'photo', text:`${ptName()}님이 사진을 올렸어요 📷 (미리보기)`}); if (S.settings.push && Notification.permission==='granted') new Notification('우리사이', {body:'알림 미리보기예요 💞'}); },
   async simulate(){
@@ -1579,14 +1597,32 @@ $('#fileInput').addEventListener('change', async e => {
 
 /* ===================== 시작 ===================== */
 function gotoDate(ds){
-  if (!S.couple || !/^\d{4}-\d{2}-\d{2}$/.test(ds || '')) return;
+  if (!S.couple || !/^\d{4}-\d{2}-\d{2}$/.test(ds || '')) return false;
   const d = pd(ds); ui.tab = 'cal'; ui.ym = [d.getFullYear(), d.getMonth()]; render(); openDay(ds);
+  return true;
+}
+// 알림 종류에 맞는 화면으로 이동하고 그 부분을 반짝여 보여준다
+const TARGET_SECTION = {photo:'sec-photo', diary:'sec-diary', event:'sec-event', check:'sec-event', anniv:'sec-event'};
+function flash(el){
+  if (!el) return;
+  el.scrollIntoView({behavior:'smooth', block:'center'});
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+}
+function openTarget(kind, date){
+  if (!S.couple) return;
+  syncNow();
+  if (kind !== 'question' && kind !== 'couple' && gotoDate(date)){
+    setTimeout(() => flash(document.getElementById(TARGET_SECTION[kind] || 'sec-event')), 350);
+    return;
+  }
+  closeSheet(); ui.tab = 'home'; render(); window.scrollTo(0, 0);
+  if (kind === 'question') setTimeout(() => flash(document.getElementById('qCard')), 150);
 }
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
   navigator.serviceWorker.register('sw.js').catch(e => console.warn('서비스워커 등록 실패', e));
   navigator.serviceWorker.addEventListener('message', e => {
     if (e.data?.type === 'sync') syncNow();
-    if (e.data?.type === 'open'){ syncNow(); gotoDate(e.data.date); }
+    if (e.data?.type === 'open') openTarget(e.data.kind, e.data.date);
   });
 }
 
@@ -1594,8 +1630,8 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
   await store.open();
   for (const p of await store.all()) thumbs[p.id] = p.thumb;
   if (!SERVER) S.photos = S.photos.filter(p => thumbs[p.id]);
-  const qs = new URLSearchParams(location.search), openDate = qs.get('date');
-  if (openDate || qs.has('api')) history.replaceState(null, '', location.pathname);
+  const qs = new URLSearchParams(location.search), openDate = qs.get('date'), openKind = qs.get('kind');
+  if (openDate || openKind || qs.has('api')) history.replaceState(null, '', location.pathname);
   if (!SERVER){
     if (S.pending && S.pending.expires < Date.now()){ S.pending = null; save(); }
     render();
@@ -1610,7 +1646,7 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
   try { navigator.storage?.persist?.(); } catch(e){}
   render(); // 저장해 둔 화면 먼저
   try { await loadMe(); } catch(e){ if (e.status !== 401) toast(S.user ? '오프라인이에요. 저장된 기록을 보여드려요' : e.message); }
-  if (openDate) gotoDate(openDate);
+  if (openDate || openKind) openTarget(openKind, openDate);
   setInterval(() => { if (document.visibilityState === 'visible') syncNow(); }, 20000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); });
   addEventListener('online', () => { flush(); syncNow(); });

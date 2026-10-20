@@ -1,5 +1,5 @@
 // 우리사이 서비스워커 — 오프라인용 화면 캐시 + 휴대폰 푸시 알림
-const CACHE = 'woorisai-v1';
+const CACHE = 'woorisai-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/badge-96.png'];
 
 self.addEventListener('install', e => {
@@ -31,7 +31,7 @@ self.addEventListener('push', e => {
     // 아이폰은 알림을 띄우지 않으면 구독이 끊길 수 있어 항상 띄운다
     await self.registration.showNotification(d.title || '우리사이', {
       body: d.body || '새 소식이 있어요', icon: 'icons/icon-192.png', badge: 'icons/badge-96.png',
-      tag: d.id || undefined, data: {date: d.date || null}, lang: 'ko',
+      tag: d.id || undefined, data: {date: d.date || null, kind: d.kind || null}, lang: 'ko',
     });
     const list = await self.clients.matchAll({type:'window', includeUncontrolled:true});
     list.forEach(c => c.postMessage({type:'sync'}));
@@ -40,11 +40,12 @@ self.addEventListener('push', e => {
 
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  const date = e.notification.data && e.notification.data.date;
+  const {date, kind} = e.notification.data || {};
   e.waitUntil((async () => {
     const list = await self.clients.matchAll({type:'window', includeUncontrolled:true});
     const c = list.find(x => new URL(x.url).pathname.startsWith(new URL(self.registration.scope).pathname));
-    if (c){ await c.focus(); c.postMessage({type:'open', date}); return; }
-    await self.clients.openWindow('./' + (date ? '?date=' + date : ''));
+    if (c){ await c.focus(); c.postMessage({type:'open', date, kind}); return; }
+    const q = new URLSearchParams(); if (date) q.set('date', date); if (kind) q.set('kind', kind);
+    await self.clients.openWindow('./' + (q.toString() ? '?' + q : ''));
   })());
 });
