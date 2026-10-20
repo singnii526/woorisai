@@ -1,0 +1,17 @@
+{
+  "name": "우리사이 — 커플 공유 캘린더",
+  "short_name": "우리사이",
+  "description": "둘만 들어올 수 있는 커플 공유 캘린더 — 사진, 일정, 일기, 체크리스트",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF4F8",
+  "theme_color": "#FFD3E2",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
