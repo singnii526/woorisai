@@ -97,6 +97,11 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 .avs{display:flex;align-items:center;justify-content:center;gap:16px;position:relative}
 .av{width:60px;height:60px;border-radius:50%;background:#fff;color:var(--pri-ink);display:grid;place-items:center;font-family:var(--cute);font-size:24px;box-shadow:0 4px 12px rgba(240,106,152,.2);border:3px solid #FFF0F5}
 .avs .h{font-size:24px;animation:beat 1.4s infinite}
+.av{position:relative;padding:0;cursor:pointer;overflow:visible}
+.av img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.av .cam{position:absolute;right:-3px;bottom:-3px;width:24px;height:24px;border-radius:50%;background:var(--pri-deep);color:#fff;font-size:11px;display:grid;place-items:center;border:2px solid #fff;font-family:var(--round)}
+.avs .av{width:72px;height:72px}
+.set .pf{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--pri-soft);display:grid;place-items:center;font-family:var(--cute);color:var(--pri-ink);font-size:18px;flex:none}
 @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}}
 .names{margin-top:12px;font-size:14px;font-weight:800;color:#A0607A;position:relative}
 .dday{font-family:var(--cute);font-size:48px;color:var(--pri-ink);margin-top:2px;position:relative;text-shadow:0 2px 0 #fff}
@@ -307,6 +312,7 @@ main{padding-bottom:calc(var(--tab) + var(--safe-b) + 28px)}
 <div id="banner" data-action="bannerClick"></div>
 <div id="toasts"></div>
 <input type="file" id="fileInput" accept="image/*" multiple hidden>
+<input type="file" id="avatarInput" accept="image/*" hidden>
 
 <script>
 /* ===================== 설정 ===================== */
@@ -382,6 +388,7 @@ const icon = n => `<svg class="i" viewBox="0 0 24 24">${ICON[n]}</svg>`;
 function freshState(){
   return { user:null, couple:null, pending:null, events:[], photos:[], covers:{}, bucket:[], notifs:[], answers:{}, diary:{},
     settings:{ push:false, photo:true, event:true, diary:true, check:true, anniv:true, question:true, quiet:false }, filters:{}, lastRemind:null,
+    avatars:{}, // {me:{ver,url}, partner:{ver,url}} — 프로필 사진(작은 dataURL)
     me:null, vapidKey:null, since:0, outbox:[] }; // 아래 줄은 서버 모드 전용
 }
 let S;
@@ -542,12 +549,27 @@ function applyMe(u){
   S.me = u;
   S.user = {id:u.id, name:u.name, provider:'kakao'};
   S.settings = {...S.settings, ...u.settings};
+  syncAvatar('me', u.id, u.avatarVer);
 }
 function applyCouple(c){
   S.couple = {id:c.id, code:c.code, start:c.start, myBirthday:S.me?.birthday || '',
     partner:{id:c.partner.id, name:S.me?.partnerAlias || c.partner.name, realName:c.partner.name, birthday:c.partner.birthday}};
+  syncAvatar('partner', c.partner.id, c.partner.avatarVer);
+}
+// 프로필 사진: 서버 버전이 바뀌었을 때만 받아온다
+const avatarBusy = {};
+async function syncAvatar(slot, userId, ver){
+  ver = ver || 0;
+  if ((S.avatars[slot]?.ver || 0) === ver || avatarBusy[slot] === ver) return;
+  if (!ver){ delete S.avatars[slot]; save(); softRender(); return; }
+  avatarBusy[slot] = ver;
+  try {
+    const url = await blobToDataURL(await (await api('GET', '/api/avatar/' + userId)).blob());
+    S.avatars[slot] = {ver, url}; save(); softRender();
+  } catch(e){} finally { delete avatarBusy[slot]; }
 }
 function clearShared(){
+  delete S.avatars.partner;
   Object.assign(S, {couple:null, pending:null, events:[], photos:[], covers:{}, bucket:[], notifs:[], answers:{}, diary:{}, since:0, outbox:[]});
   for (const k in thumbs) delete thumbs[k];
   store.clear();
@@ -612,7 +634,7 @@ async function fetchMissingThumbs(){
 }
 function signedOut(){
   token = null; try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
-  clearShared(); S.user = null; S.me = null; save(); closeSheet(); render();
+  clearShared(); S.user = null; S.me = null; S.avatars = {}; save(); closeSheet(); render();
 }
 // 입력 중일 때는 화면을 다시 그리지 않고 입력이 끝나면 그린다
 function softRender(){
@@ -798,6 +820,14 @@ function shellView(){
     <nav class="tabbar">${tabs.map(([k,l,ic]) => `<button class="${ui.tab===k?'on':''}" data-action="tab" data-tab="${k}">${icon(ic)}${l}</button>`).join('')}</nav>`;
 }
 
+function avatarHTML(slot){
+  const a = S.avatars[slot], name = slot === 'me' ? meName() : ptName();
+  const editable = slot === 'me' || !SERVER; // 서버 모드에선 상대 사진은 상대가 직접 등록
+  return `<button class="av" data-action="pickAvatar" data-slot="${slot}" aria-label="${esc(name)} 프로필 사진">
+    ${a ? `<img src="${a.url}" alt="${esc(name)}">` : esc(name.slice(0,1))}
+    ${editable && !a ? '<span class="cam">📷</span>' : ''}</button>`;
+}
+
 function homeView(){
   const c = S.couple, ups = upcoming(4), t = todayStr();
   const qi = Math.floor(pd(t).getTime()/864e5) % QUESTIONS.length;
@@ -807,7 +837,7 @@ function homeView(){
   <section class="couple">
     <span class="fl" style="left:18px;top:16px">♥</span><span class="fl" style="right:26px;top:30px;font-size:13px;animation-delay:.8s">♥</span>
     <span class="fl" style="left:40px;bottom:22px;font-size:12px;animation-delay:1.5s">♥</span><span class="fl" style="right:44px;bottom:30px;font-size:20px;animation-delay:2.2s">♥</span>
-    <div class="avs"><div class="av">${esc(meName().slice(0,1))}</div><div class="h">💗</div><div class="av">${esc(ptName().slice(0,1))}</div></div>
+    <div class="avs">${avatarHTML('me')}<div class="h">💗</div>${avatarHTML('partner')}</div>
     <div class="names">${esc(meName())} & ${esc(ptName())}</div>
     <div class="dday">D+${dPlus().toLocaleString()}</div>
     <div class="since">${c.start.replaceAll('-','.')}부터 함께</div>
@@ -929,6 +959,10 @@ function settingsView(){
     <button class="btn line sm" style="margin-top:8px" data-action="testNotif">알림 미리보기</button>
   </section>
   <section class="card"><h3>💑 우리 정보</h3>
+    <div class="set">${S.avatars.me ? `<img class="pf" src="${S.avatars.me.url}" alt="">` : `<span class="pf">${esc(meName().slice(0,1))}</span>`}
+      <div class="t"><b>내 프로필 사진</b><span>홈 화면 하트 옆에 나와요${SERVER ? ' · 상대방에게도 보여요' : ''}</span></div>
+      <button class="btn ghost sm" style="width:auto;padding:0 14px" data-action="pickAvatar" data-slot="me">${S.avatars.me ? '변경' : '등록'}</button>
+      ${S.avatars.me ? '<button class="btn line sm" style="width:auto;padding:0 12px" data-action="removeAvatar" data-slot="me">삭제</button>' : ''}</div>
     <div class="set"><div class="t"><b>내 이름</b></div><input class="inp" data-field="user.name" value="${esc(meName())}" maxlength="10"></div>
     <div class="set"><div class="t"><b>내 생일</b></div><input class="inp" type="date" data-field="couple.myBirthday" value="${c.myBirthday||''}"></div>
     <div class="set"><div class="t"><b>${SERVER ? '상대방 애칭' : '상대방 이름'}</b>${SERVER ? '<span>나에게만 이렇게 보여요</span>' : ''}</div><input class="inp" data-field="couple.partner.name" value="${esc(ptName())}" maxlength="10"></div>
@@ -1213,6 +1247,19 @@ const A = {
     save(); render(); openDay(e.date);
   },
 
+  /* 프로필 사진 */
+  pickAvatar(el){
+    const slot = el.dataset.slot;
+    if (slot === 'partner' && SERVER) return toast(`${ptName()}님의 사진은 ${ptName()}님이 직접 등록해요`);
+    ui.avatarSlot = slot; $('#avatarInput').click();
+  },
+  async removeAvatar(el){
+    const slot = el.dataset.slot;
+    if (!confirm('프로필 사진을 지울까요?')) return;
+    if (SERVER && slot === 'me'){ try { await api('DELETE', '/api/me/avatar'); } catch(e){ return toast(e.message); } }
+    delete S.avatars[slot]; save(); render(); toast('프로필 사진을 지웠어요');
+  },
+
   /* 체크리스트 */
   ckAdd(){
     const inp = $('#ckText'), text = inp.value.trim(); if (!text) return inp.focus();
@@ -1490,6 +1537,27 @@ document.addEventListener('change', async e => {
   }
 });
 document.addEventListener('focusout', () => { if (ui.needRender){ ui.needRender = false; setTimeout(() => { render(); refreshSheet(); }, 0); } });
+// 프로필 사진: 가운데를 정사각형으로 잘라 작게 줄인다
+function squareCrop(img, size){
+  const w = img.naturalWidth, h = img.naturalHeight, m = Math.min(w, h);
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  c.getContext('2d').drawImage(img, (w-m)/2, (h-m)/2, m, m, 0, 0, size, size);
+  return c.toDataURL('image/jpeg', .85);
+}
+$('#avatarInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  const slot = ui.avatarSlot || 'me'; if (!f) return;
+  let url;
+  try { url = squareCrop(await loadImage(f), 320); } catch(err){ return toast('사진을 읽지 못했어요'); }
+  if (SERVER){
+    try {
+      const fd = new FormData(); fd.append('avatar', await dataURLToBlob(url), 'avatar.jpg');
+      const r = await api('POST', '/api/me/avatar', fd);
+      S.avatars.me = {ver:r.avatarVer, url}; if (S.me) S.me.avatarVer = r.avatarVer;
+    } catch(err){ return toast('사진을 올리지 못했어요: ' + err.message); }
+  } else S.avatars[slot] = {ver:Date.now(), url};
+  save(); render(); toast('프로필 사진을 바꿨어요 💗');
+});
 $('#fileInput').addEventListener('change', async e => {
   const files = [...e.target.files]; e.target.value = '';
   if (!files.length) return;
