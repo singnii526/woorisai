@@ -1538,6 +1538,8 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
   const m = location.hash.match(/wt_token=([a-f0-9]{48})/);
   if (m){ token = m[1]; try { localStorage.setItem(TOKEN_KEY, token); } catch(e){} history.replaceState(null, '', location.pathname); }
   if (!token){ if (S.user) clearShared(); S.user = null; save(); render(); return; }
+  // 휴대폰이 저장 공간을 정리할 때 로그인 정보·사진 사본을 지우지 않도록 요청
+  try { navigator.storage?.persist?.(); } catch(e){}
   render(); // 저장해 둔 화면 먼저
   try { await loadMe(); } catch(e){ if (e.status !== 401) toast(S.user ? '오프라인이에요. 저장된 기록을 보여드려요' : e.message); }
   if (openDate) gotoDate(openDate);
